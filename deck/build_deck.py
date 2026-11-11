@@ -114,6 +114,8 @@ class Theme:
         t = tokens
         self.families = t.families("font.family.sans")
         self.font = font_override or self.families[0]
+        mono = t.families("font.family.mono")
+        self.mono = next((f for f in mono if _installed(f)), mono[0])
         c = t.color
         self.text_primary = c("color.text.primary")
         self.text_secondary = c("color.text.secondary")
@@ -164,6 +166,15 @@ def _font_file(pattern: str) -> str | None:
         return out or None
     except (OSError, subprocess.CalledProcessError):
         return None
+
+
+def _installed(family: str) -> bool:
+    try:
+        out = subprocess.run(["fc-list", family], capture_output=True, text=True,
+                             check=True).stdout
+        return bool(out.strip())
+    except (OSError, subprocess.CalledProcessError):
+        return False
 
 
 class Measurer:
@@ -261,7 +272,7 @@ def box(slide, x, y, w, h, fill=None, line=None, radius=0.0, line_w=1.0):
 
 def text(slide, x, y, w, h, paragraphs, theme, size, color, bold=False,
          align=PP_ALIGN.LEFT, anchor=MSO_ANCHOR.TOP, space_after=0.0,
-         bullet=None, letter=None, styles=None):
+         bullet=None, letter=None, styles=None, font=None):
     """Add a text box. `styles` optionally gives (size, color, bold) per
     paragraph; `bullet` is a hex color for a native round bullet."""
     tb = slide.shapes.add_textbox(Pt(x), Pt(y), Pt(w), Pt(h))
@@ -297,7 +308,7 @@ def text(slide, x, y, w, h, paragraphs, theme, size, color, bold=False,
             is_bold = p_bold or part.startswith("**")
             run.text = part.strip("*") if part.startswith("**") else part
             f = run.font
-            f.name = theme.font
+            f.name = font or theme.font
             f.size = Pt(p_size)
             f.bold = is_bold
             f.color.rgb = rgb(p_color)
@@ -512,6 +523,70 @@ class Renderer:
                 text(slide, cx + t.pad, cy, cw - 2 * t.pad, rh, [val], t, size, color,
                      anchor=MSO_ANCHOR.MIDDLE)
 
+    def b_table(self, slide, b, x, y, w, h, where):
+        """A table: `columns` headers, `rows` of cells, optional `widths`
+        ratios, `align` per column (l or r) and `total` to bold the last row."""
+        t = self.t
+        cols, rows = b["columns"], b["rows"]
+        ratios = b.get("widths", [1] * len(cols))
+        cws = [w * r / sum(ratios) for r in ratios]
+        aligns = [PP_ALIGN.RIGHT if a == "r" else PP_ALIGN.LEFT
+                  for a in b.get("align", "l" * len(cols))]
+        head_h = b.get("head_h", 30)
+        rh = (h - head_h) / len(rows)
+        pad = 8
+        size = b.get("size", 14)
+        while size > 9:
+            ok = all(MEASURE.lines(str(c), size, bool(i == 0 or (b.get("total") and r is rows[-1])),
+                                   cws[i] - 2 * pad) * size * LINE_HEIGHT <= rh - 4
+                     for r in rows for i, c in enumerate(r))
+            ok = ok and all(MEASURE.lines(c, size, True, cws[i] - 2 * pad) * size
+                            * LINE_HEIGHT <= head_h - 2 for i, c in enumerate(cols))
+            if ok:
+                break
+            size -= 0.5
+        else:
+            WARNINGS.append(f"OVERFLOW risk: {where} table does not fit at 9 pt")
+        box(slide, x, y, w, head_h, fill=t.surface_brand, radius=t.radius_md)
+        cx = x
+        for i, c in enumerate(cols):
+            text(slide, cx + pad, y, cws[i] - 2 * pad, head_h, [c], t, size, t.text_inverse,
+                 bold=True, align=aligns[i], anchor=MSO_ANCHOR.MIDDLE)
+            cx += cws[i]
+        for r, row in enumerate(rows):
+            ry = y + head_h + r * rh
+            last = b.get("total") and r == len(rows) - 1
+            fill = t.surface_sunken if last else (t.surface_subtle if r % 2 else t.surface)
+            box(slide, x, ry, w, rh, fill=fill)
+            box(slide, x, ry + rh - 0.75, w, 0.75, fill=t.border_subtle)
+            cx = x
+            for i, c in enumerate(row):
+                text(slide, cx + pad, ry, cws[i] - 2 * pad, rh, [str(c)], t, size,
+                     t.text_primary if (i == 0 or last) else t.text_secondary,
+                     bold=bool(last) or i == 0 and b.get("bold_first", True),
+                     align=aligns[i], anchor=MSO_ANCHOR.MIDDLE)
+                cx += cws[i]
+
+    def b_code(self, slide, b, x, y, w, h, where):
+        """Verbatim tool output in the mono token font on a dark panel; a
+        line that starts with "> " is highlighted in the accent color."""
+        t = self.t
+        box(slide, x, y, w, h, fill=t.surface_brand_strong, radius=t.radius_md)
+        title_h = 24
+        text(slide, x + t.pad, y + 6, w - 2 * t.pad, title_h - 6, [b["title"]], t, 11,
+             t.accent, bold=True, anchor=MSO_ANCHOR.MIDDLE)
+        lines = b["lines"]
+        avail_w, avail_h = w - 2 * t.pad, h - title_h - 12
+        size = 13.0
+        while size > 7 and (max(len(ln) for ln in lines) * size * 0.6 > avail_w
+                            or len(lines) * size * LINE_HEIGHT > avail_h):
+            size -= 0.5
+        styles = [(size, t.accent if ln.startswith("> ") else t.text_inverse, False)
+                  for ln in lines]
+        text(slide, x + t.pad, y + title_h + 4, avail_w, avail_h,
+             [ln[2:] if ln.startswith("> ") else ln for ln in lines], t, size,
+             t.text_inverse, styles=styles, font=t.mono)
+
     def b_status(self, slide, b, x, y, w, h, where):
         t = self.t
         items = b["items"]
@@ -564,7 +639,8 @@ class Renderer:
             head.append(f"Tiempo objetivo: {s['time']} · "
                         f"Presenta: {self.member(s.get('presenter', ''))}")
         if s.get("number"):
-            head.append(f"Diapositiva {s['number']} de 18 del guion (docs/speaker-script.md)")
+            head.append(f"Diapositiva {s['number']} de {self.script_total} del guion "
+                        "(docs/speaker-script.md)")
         body = s.get("notes", "").strip()
         slide.notes_slide.notes_text_frame.text = "\n".join(head + ([""] if head else []) + [body])
 
@@ -721,6 +797,7 @@ def build(content: dict, theme: Theme, out: Path):
     blank = prs.slide_layouts[6]
     slides = content["slides"]
     r = Renderer(theme, len(slides), content["meta"])
+    r.script_total = max(s.get("number", 0) for s in slides)
     for i, s in enumerate(slides, start=1):
         slide = prs.slides.add_slide(blank)
         getattr(r, "team_slide" if s["kind"] == "team" else s["kind"])(slide, s, i)
