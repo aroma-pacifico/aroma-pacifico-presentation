@@ -11,12 +11,18 @@ Images (brand marks, icons, diagram crops and design-system previews) are
 rendered once from the sibling repositories with --refresh-assets and kept
 under deck/assets/, so a plain rebuild needs neither repository.
 
+Team portraits are cropped once from the original photos with
+--team-photos DIR into deck/assets/team/, using the eye position and the
+eye-to-chin distance recorded per photo in content.yaml, so every face has
+the same size and eye height on the team slide.
+
 Usage:
     python3 deck/build_deck.py                      # PPTX only
     python3 deck/build_deck.py --render             # PPTX, PDF and previews
     python3 deck/build_deck.py --refresh-assets \
         --design-system ../aroma-pacifico-design-system \
         --diagrams ../aroma-pacifico-diagrams --render
+    python3 deck/build_deck.py --team-photos <dir> --render
 
 Requirements: python-pptx, PyYAML and Pillow. --refresh-assets also needs
 Google Chrome or Chromium (headless SVG rendering). --render needs
@@ -35,8 +41,10 @@ import sys
 import tempfile
 from pathlib import Path
 
+import io
+
 import yaml
-from PIL import Image, ImageFont
+from PIL import Image, ImageFilter, ImageFont, ImageOps
 from pptx import Presentation
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE
@@ -51,6 +59,10 @@ OUT_NAME = "aroma-pacifico-sustentacion"
 SLIDE_W, SLIDE_H = 960.0, 540.0  # points, 16:9 (13.333 x 7.5 in)
 BRAND_FILES = ["logo", "logo-negative", "isotype", "isotype-negative"]
 LINE_HEIGHT = 1.3  # layout line height in em; covers Roboto and Arial metrics
+PORTRAIT_RATIO = 3 / 4  # width / height of the team portraits
+PORTRAIT_FACE = 0.25  # eye-to-chin distance as a share of the portrait height
+PORTRAIT_EYES = 0.31  # eye line as a share of the portrait height, from the top
+PORTRAIT_MAX_H = 900  # pixels
 
 WARNINGS: list[str] = []
 
@@ -114,6 +126,7 @@ class Theme:
         self.surface_brand_strong = c("color.surface.brand-strong")
         self.border_subtle = c("color.border.subtle")
         self.accent = c("color.brand.parchment.400")  # decorative only
+        self.brand_primary = c("color.brand.primary.700")
         self.states = {
             name: (c(f"color.sack.{key}.background"), c(f"color.sack.{key}.text"),
                    c(f"color.sack.{key}.border"))
@@ -309,6 +322,18 @@ def icon_path(name: str, variant: str) -> Path:
     return ASSETS / "icons" / f"{name}-{variant}.png"
 
 
+def watermark(path: Path, opacity: float) -> io.BytesIO:
+    """The brand mark with its alpha scaled down, as an in-memory PNG."""
+    with Image.open(path) as im:
+        im = im.convert("RGBA")
+        alpha = im.getchannel("A").point(lambda a: round(a * opacity))
+        im.putalpha(alpha)
+        buf = io.BytesIO()
+        im.save(buf, format="PNG")
+    buf.seek(0)
+    return buf
+
+
 # --------------------------------------------------------------------------
 # Blocks
 # --------------------------------------------------------------------------
@@ -319,6 +344,14 @@ class Renderer:
         self.t = theme
         self.total = total
         self.meta = meta
+        self.team = {m["code"]: m for m in meta["team"]}
+
+    def member(self, code: str) -> str:
+        """Full name, role and deck role of a presenter, for the notes."""
+        m = self.team.get(code)
+        if not m:
+            return code
+        return f"{m['first']} {m['last']} ({m['role']}, {code})"
 
     # --- block dispatch --------------------------------------------------
 
@@ -525,9 +558,11 @@ class Renderer:
     def notes(self, slide, s):
         head = []
         if s["kind"] == "divider":
-            head.append(f"Parte {s['part']}: {s['time']} en total · Presenta: {s['presenter']}")
+            head.append(f"Parte {s['part']}: {s['time']} en total · "
+                        f"Presenta: {self.member(s['presenter'])}")
         elif s.get("time"):
-            head.append(f"Tiempo objetivo: {s['time']} · Presenta: {s.get('presenter', '')}")
+            head.append(f"Tiempo objetivo: {s['time']} · "
+                        f"Presenta: {self.member(s.get('presenter', ''))}")
         if s.get("number"):
             head.append(f"Diapositiva {s['number']} de 18 del guion (docs/speaker-script.md)")
         body = s.get("notes", "").strip()
@@ -565,12 +600,19 @@ class Renderer:
              t.text_inverse, bold=True)
         text(slide, t.margin, 344, 820, 30, [s["subtitle"]], t, t.size_heading,
              t.text_inverse)
+        team = self.meta["team"]
         cw = (SLIDE_W - 2 * t.margin - 3 * t.gap) / 4
-        for i, member in enumerate(s["team"]):
+        inner = cw - 2 * t.pad
+        size = min(fit([m["first"], m["last"]], inner, 2 * 15 * LINE_HEIGHT, 15, 11,
+                       bold=True, where="cover team") for m in team)
+        for i, m in enumerate(team):
             cx = t.margin + i * (cw + t.gap)
-            box(slide, cx, 408, cw, 44, line=t.text_inverse, radius=t.radius_md, line_w=1)
-            text(slide, cx + t.pad, 408, cw - 2 * t.pad, 44, [member], t, t.size_body,
-                 t.text_inverse, anchor=MSO_ANCHOR.MIDDLE)
+            box(slide, cx, 392, cw, 68, line=t.text_inverse, radius=t.radius_md, line_w=1)
+            text(slide, cx + t.pad, 392, inner, 68,
+                 [f"{m['code']} · {m['role']}", m["first"], m["last"]], t, size,
+                 t.text_inverse, anchor=MSO_ANCHOR.MIDDLE,
+                 styles=[(11, t.text_inverse, False), (size, t.text_inverse, True),
+                         (size, t.text_inverse, True)])
         text(slide, t.margin, 478, 400, 20, [s["date"]], t, t.size_caption, t.text_inverse)
         text(slide, SLIDE_W - t.margin - 60, 478, 60, 20, [f"{index} / {self.total}"], t, 11,
              t.text_inverse, align=PP_ALIGN.RIGHT)
@@ -586,11 +628,73 @@ class Renderer:
                    where=f"slide {index} divider title")
         text(slide, t.margin, 146, 520, 120, [s["title"]], t, size, t.text_inverse,
              bold=True, anchor=MSO_ANCHOR.MIDDLE)
-        text(slide, t.margin, 280, 520, 30, [f"Presenta {s['presenter']} · {s['time']} minutos"],
-             t, t.size_heading + 2, t.text_inverse, bold=True)
-        text(slide, t.margin, 326, 520, 140, s["agenda"], t, t.size_body_large,
+        lines = [f"{m['first']} {m['last']} · {m['role']}" for m in self.meta["team"]]
+        size = min(fit([ln], 520, (t.size_heading + 2) * LINE_HEIGHT, t.size_heading + 2,
+                       14, bold=True, where=f"slide {index} presenter") for ln in lines)
+        m = self.team[s["presenter"]]
+        text(slide, t.margin, 278, 520, 58,
+             [f"{m['first']} {m['last']} · {m['role']}", f"{s['time']} minutos"], t, size,
+             t.text_inverse, styles=[(size, t.text_inverse, True),
+                                     (t.size_body_large, t.text_inverse, False)])
+        text(slide, t.margin, 344, 520, 130, s["agenda"], t, t.size_body_large,
              t.text_inverse, space_after=6)
         self.footer(slide, index, None, dark=True)
+
+    def team_slide(self, slide, s, index):
+        t = self.t
+        box(slide, 0, 0, SLIDE_W, SLIDE_H, fill=t.surface)
+        # Background motif: the brand isotype as a faint watermark, partly
+        # off the slide, behind everything else.
+        size = 430
+        slide.shapes.add_picture(watermark(ASSETS / "brand" / "isotype.png", 0.07),
+                                 Pt(SLIDE_W - size * 0.72), Pt(SLIDE_H - size * 0.86),
+                                 Pt(size), Pt(size))
+        slide.shapes.add_picture(watermark(ASSETS / "brand" / "isotype.png", 0.05),
+                                 Pt(-size * 0.42), Pt(-size * 0.38), Pt(size * 0.8),
+                                 Pt(size * 0.8))
+        # Header strip in the style of the content slides.
+        box(slide, 0, 0, SLIDE_W, 6, fill=t.surface_brand)
+        hw = (SLIDE_W - 2 * t.margin) / 3
+        for i, (label, align) in enumerate(((s["institution"], PP_ALIGN.LEFT),
+                                            (s["occasion"], PP_ALIGN.CENTER),
+                                            (f"{index} / {self.total}", PP_ALIGN.RIGHT))):
+            text(slide, t.margin + i * hw, 22, hw, 18, [label.upper()], t, 12,
+                 t.text_brand, bold=True, letter=1.2, align=align, anchor=MSO_ANCHOR.MIDDLE)
+        box(slide, t.margin, 50, SLIDE_W - 2 * t.margin, 1, fill=t.border_subtle)
+        text(slide, t.margin, 62, SLIDE_W - 2 * t.margin, 40, [s["title"]], t,
+             t.size_title, t.text_primary, bold=True, anchor=MSO_ANCHOR.MIDDLE)
+        # Four portrait cards of equal size, 3:4, with name and role below.
+        team = self.meta["team"]
+        n = len(team)
+        pw = 184
+        ph = pw / PORTRAIT_RATIO
+        gap = (SLIDE_W - 2 * t.margin - n * pw) / (n - 1)
+        py = 120
+        name_size = min(fit([m["first"], m["last"]], pw, 2 * 20 * LINE_HEIGHT, 20, 14,
+                            bold=True, where="team names") for m in team)
+        for i, m in enumerate(team):
+            px = t.margin + i * (pw + gap)
+            pic = slide.shapes.add_picture(str(ASSETS / "team" / f"{m['photo']}.jpg"),
+                                           Pt(px), Pt(py), Pt(pw), Pt(ph))
+            pic.auto_shape_type = MSO_SHAPE.ROUNDED_RECTANGLE
+            geom = pic._element.spPr.find(qn("a:prstGeom"))
+            av = geom.find(qn("a:avLst"))
+            av.append(av.makeelement(qn("a:gd"), {
+                "name": "adj", "fmla": f"val {round(100000 * t.radius / pw)}"}))
+            pic.line.color.rgb = rgb(t.border_subtle)
+            pic.line.width = Pt(1)
+            box(slide, px, py + ph + 12, 40, 4, fill=t.accent)
+            ny = py + ph + 22
+            text(slide, px, ny, pw, 2 * name_size * LINE_HEIGHT, [m["first"], m["last"]], t,
+                 name_size, t.brand_primary, bold=True)
+            text(slide, px, ny + 2 * name_size * LINE_HEIGHT + 2, pw, 22, [m["role"]], t,
+                 t.size_body, t.text_secondary)
+        iso = ASSETS / "brand" / "isotype.png"
+        y = SLIDE_H - 34
+        box(slide, t.margin, y - 10, SLIDE_W - 2 * t.margin, 1, fill=t.border_subtle)
+        picture(slide, iso, t.margin, y - 2, 22, 22)
+        text(slide, t.margin + 30, y, 260, 18, [self.meta["footer"]], t, 11,
+             t.text_secondary, anchor=MSO_ANCHOR.MIDDLE)
 
     def closing(self, slide, s, index):
         t = self.t
@@ -619,7 +723,7 @@ def build(content: dict, theme: Theme, out: Path):
     r = Renderer(theme, len(slides), content["meta"])
     for i, s in enumerate(slides, start=1):
         slide = prs.slides.add_slide(blank)
-        getattr(r, s["kind"])(slide, s, i)
+        getattr(r, "team_slide" if s["kind"] == "team" else s["kind"])(slide, s, i)
         r.notes(slide, s)
     prs.save(out)
     return len(slides)
@@ -683,6 +787,68 @@ def crop_save(src: Path, out: Path, crop, max_w: int):
         im.save(out, optimize=True)
 
 
+def crop_portrait(src: Path, out: Path, spec: dict):
+    """Crop a 3:4 portrait whose eye line and face size match the others.
+
+    `spec` gives the eye midpoint as fractions of the photo ([x, y]) and the
+    eye-to-chin distance as a fraction of the photo height. Where the crop
+    leaves the photo at the top, it is filled with the wall color and the
+    photo fades into it; other edges are mirrored. A warning is printed."""
+    with Image.open(src) as im:
+        im = ImageOps.exif_transpose(im).convert("RGB")
+    w, h = im.size
+    ex, ey = spec["eyes"][0] * w, spec["eyes"][1] * h
+    ch = spec["eye_chin"] * h / PORTRAIT_FACE
+    cw = ch * PORTRAIT_RATIO
+    left, top = round(ex - cw / 2), round(ey - PORTRAIT_EYES * ch)
+    right, bottom = left + round(cw), top + round(ch)
+    pads = (max(0, -left), max(0, -top), max(0, right - w), max(0, bottom - h))
+    if any(pads):
+        WARNINGS.append(f"PORTRAIT: {src.name} extended at the edge by {pads} px "
+                        "(left, top, right, bottom)")
+        pl, pt, pr, pb = pads
+        canvas = Image.new("RGB", (w + pl + pr, h + pt + pb))
+        canvas.paste(im, (pl, pt))
+        if pt:
+            # Fill with the wall color sampled at both ends of the top row and
+            # fade the first rows of the photo into it, so hair that touches
+            # the top edge ends softly instead of in a straight cut.
+            band = max(4, h // 40)
+            edge = w // 20
+            c_left = im.crop((0, 0, edge, band)).resize((1, 1), Image.BOX).getpixel((0, 0))
+            c_right = im.crop((w - edge, 0, w, band)).resize((1, 1), Image.BOX).getpixel((0, 0))
+            wall = Image.new("RGB", (2, 1))
+            wall.putpixel((0, 0), c_left)
+            wall.putpixel((1, 0), c_right)
+            canvas.paste(wall.resize((w, pt + band), Image.BILINEAR), (pl, 0))
+            ramp = Image.linear_gradient("L").resize((w, band))  # black at the top
+            canvas.paste(Image.composite(im.crop((0, 0, w, band)),
+                                         canvas.crop((pl, pt, pl + w, pt + band)), ramp),
+                         (pl, pt))
+        if pb:
+            canvas.paste(im.crop((0, h - pb, w, h)).transpose(Image.FLIP_TOP_BOTTOM),
+                         (pl, pt + h))
+        if pl:
+            canvas.paste(canvas.crop((pl, 0, 2 * pl, canvas.height))
+                         .transpose(Image.FLIP_LEFT_RIGHT), (0, 0))
+        if pr:
+            canvas.paste(canvas.crop((pl + w - pr, 0, pl + w, canvas.height))
+                         .transpose(Image.FLIP_LEFT_RIGHT), (pl + w, 0))
+        im, left, top, right, bottom = canvas, left + pl, top + pt, right + pl, bottom + pt
+    im = im.crop((left, top, right, bottom))
+    if im.height > PORTRAIT_MAX_H:
+        im = im.resize((round(PORTRAIT_MAX_H * PORTRAIT_RATIO), PORTRAIT_MAX_H), Image.LANCZOS)
+    im.save(out, quality=90, optimize=True)
+    return im.size
+
+
+def refresh_team(content: dict, photos: Path):
+    (ASSETS / "team").mkdir(parents=True, exist_ok=True)
+    for name, spec in content["assets"]["team"].items():
+        size = crop_portrait(photos / spec["src"], ASSETS / "team" / f"{name}.jpg", spec)
+        print(f"Portrait {name}: {size[0]} x {size[1]} px")
+
+
 def refresh_assets(content: dict, ds: Path, diagrams: Path, theme_colors: dict):
     for sub in ("brand", "icons", "images"):
         (ASSETS / sub).mkdir(parents=True, exist_ok=True)
@@ -742,6 +908,8 @@ def main():
                     default=DECK_DIR.parent.parent / "aroma-pacifico-design-system")
     ap.add_argument("--diagrams", type=Path,
                     default=DECK_DIR.parent.parent / "aroma-pacifico-diagrams")
+    ap.add_argument("--team-photos", type=Path,
+                    help="crop the team portraits from the original photos in this folder")
     ap.add_argument("--render", action="store_true", help="also export PDF and PNG previews")
     ap.add_argument("--font", help="override the token font family (fallback test)")
     ap.add_argument("--out", type=Path, default=DECK_DIR / f"{OUT_NAME}.pptx")
@@ -755,6 +923,8 @@ def main():
                   "review": tokens.color("color.sack.in-transit.icon"),
                   "pending": tokens.color("color.sack.in-preparation.icon")}
         refresh_assets(content, args.design_system, args.diagrams, colors)
+    if args.team_photos:
+        refresh_team(content, args.team_photos)
 
     theme = Theme(Tokens(ASSETS / "tokens.json"), args.font)
     global MEASURE

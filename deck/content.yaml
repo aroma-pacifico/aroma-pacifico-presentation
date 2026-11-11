@@ -7,6 +7,13 @@
 meta:
   title: "Aroma Pacífico: sustentación final"
   footer: "Aroma Pacífico · Sustentación 2026"
+  # Presentation order. The cover, the team slide, the part dividers and the
+  # speaker notes read names and roles from here.
+  team:
+    - {code: SR1, first: "Esteban", last: "Gaviria Zambrano", role: "Senior DevOps", photo: esteban}
+    - {code: SR2, first: "Jeanpaul Atkinson", last: "Vidales Gallego", role: "Senior DevOps", photo: jeanpaul}
+    - {code: JR1, first: "Karen Valeria", last: "Jurado Calpa", role: "Junior DevOps", photo: karen}
+    - {code: JR2, first: "César Augusto", last: "Jiménez Reina", role: "Junior DevOps", photo: cesar}
 
 # Rendered once with `build_deck.py --refresh-assets` from the sibling
 # repositories and committed under deck/assets/, so the deck can be rebuilt
@@ -24,6 +31,15 @@ assets:
     firewall: {src: security/firewall-policy.svg, crop: [0.618, 0.08, 1.0, 0.47]}
     inference: {src: flows/inference-functions.svg, crop: [0.0, 0.07, 0.385, 0.45]}
     pipeline: {src: pipelines/platform-pipeline.svg, crop: [0.17, 0.075, 1.0, 0.505]}
+  # Team portraits, cropped with `build_deck.py --team-photos <dir>` from the
+  # original photos (not kept in the repository). `eyes` is the midpoint of
+  # the eyes as fractions of the photo [x, y]; `eye_chin` is the eye-to-chin
+  # distance as a fraction of the photo height.
+  team:
+    esteban: {src: esteban.jpeg, eyes: [0.50, 0.40], eye_chin: 0.215}
+    jeanpaul: {src: jeanpaul.jpeg, eyes: [0.415, 0.23], eye_chin: 0.23}
+    karen: {src: karen.jpeg, eyes: [0.50, 0.343], eye_chin: 0.225}
+    cesar: {src: cesar.jpeg, eyes: [0.49, 0.43], eye_chin: 0.205}
   previews:
     ds-alerts: {src: previews/alert-card.png, crop: [0.0, 0.0, 1.0, 0.6]}
     ds-lookup: {src: previews/buyer-lookup-phone.png, crop: [0.0, 0.0, 1.0, 0.38]}
@@ -33,15 +49,18 @@ slides:
     eyebrow: "Sustentación final · Reto DevOps 2026"
     title: "Piloto de trazabilidad del café, actualización 2026"
     subtitle: "Cauca, Huila y Tolima · AWS como nube principal · Entrega solo de plan"
-    team:
-      - "SR1 · [Nombre SR1]"
-      - "SR2 · [Nombre SR2]"
-      - "JR1 · [Nombre JR1]"
-      - "JR2 · [Nombre JR2]"
     date: "Noviembre de 2026"
     notes: |
-      Portada. Sin tiempo propio: cuenta dentro de la diapositiva 1.
-      Mientras el jurado se acomoda, cada integrante dice su nombre y su rol (SR1, SR2, JR1, JR2). El equipo reemplaza los marcadores [Nombre ...] antes de la sustentación.
+      Portada. Sin tiempo propio: cuenta dentro de la diapositiva 1 del guion.
+      Mientras el jurado se acomoda, SR1 dice el título y pasa a la diapositiva del equipo.
+
+  - kind: team
+    institution: "Universidad Icesi"
+    occasion: "Sustentación técnica"
+    title: "El equipo"
+    notes: |
+      Equipo. Sin tiempo propio: cuenta dentro de la diapositiva 1 del guion.
+      Cada integrante dice su nombre y su rol, en el orden de la sustentación: Esteban Gaviria Zambrano, Senior DevOps (SR1, parte 1); Jeanpaul Atkinson Vidales Gallego, Senior DevOps (SR2, parte 2); Karen Valeria Jurado Calpa, Junior DevOps (JR1, parte 3); y César Augusto Jiménez Reina, Junior DevOps (JR2, parte 4).
 
   - kind: divider
     part: 1
@@ -362,13 +381,13 @@ slides:
               - "**Todo en us-east-1;** al modelo solo llegan imágenes filtradas y lecturas que abren alerta"
           - type: callout
             h: 74
-            text: "Un orquestador de capacidades del dron, dirigido por eventos, coordina las funciones: bus y reglas de EventBridge y una cola SQS por función (ADR-004, en revisión)."
-    source: "Funciones de inferencia · aroma-pacifico-terraform-modules PR #14 · flows/inference-functions.svg"
+            text: "Un orquestador de capacidades del dron, dirigido por eventos, coordina las funciones: bus y reglas de EventBridge y una cola SQS por función (ADR-004, propuesto)."
+    source: "Funciones de inferencia · ADR-004 · aroma-pacifico-terraform-modules PR #14 · flows/inference-functions.svg"
     presenter: "JR1"
     time: "1:00"
     notes: |
       La inferencia es dirigida por eventos. Cuatro funciones, una por disparador: el lote de telemetría, la confirmación del foco, el objeto de verificación y la estimación de cosecha.
-      Las coordina un orquestador de capacidades del dron dirigido por eventos: un bus de EventBridge con reglas y una cola SQS por función. Esa decisión es el ADR-004, que está en revisión.
+      Las coordina un orquestador de capacidades del dron dirigido por eventos: un bus de EventBridge con reglas y una cola SQS por función. Esa decisión es el ADR-004, fusionado con estado propuesto, y el orquestador ya aparece rotulado en el diagrama completo y en el de funciones de inferencia.
       El módulo de funciones de inferencia implementa el patrón: una cola SQS de disparo, una cola de mensajes fallidos, un rol IAM de mínimo privilegio y una función Lambda que llama a Amazon Nova Pro en Bedrock. Cada función lee un objeto persistido, llama a la inferencia administrada en us-east-1 y persiste el resultado con hora, confianza y objeto de origen.
       No entrenamos modelos y ningún cómputo espera objetos: cero EC2, cero contenedores, cero concurrencia aprovisionada. Si una invocación falla, el objeto de origen se queda y el estado del caso no cambia. Todo se guarda y procesa en us-east-1, y al modelo solo llegan imágenes de cultivo filtradas y lecturas que abren una alerta.
 
@@ -426,14 +445,14 @@ slides:
       - type: cards
         cols: 2
         items:
-          - {icon: check-circle, title: "Cubre", text: "Terraform, el ambiente qa, seis módulos y estado S3 con bloqueo"}
+          - {icon: check-circle, title: "Cubre", text: "Terraform, el ambiente qa, ocho módulos de referencia (v0.4.0) y estado S3 con bloqueo"}
           - {icon: x-circle, title: "Deja fuera, a propósito", text: "Zona de aterrizaje, 200 fincas, 3 centros y entregables aparte"}
     source: "ADR-003 · Plan de 100 horas, sección 2 · complete/architecture-iac.svg"
     presenter: "JR2"
     time: "2:00"
     notes: |
       ¿Por qué el código de infraestructura cabe en 100 horas? Porque lo limitamos a lo que cuenta el caso: módulos, variables, estado remoto y un plan ejecutable de un ambiente.
-      Usamos Terraform, porque las 28 reglas obligatorias del proyecto están escritas para él. Planeamos un ambiente patrón, qa. Las piezas reutilizables ya fusionadas son los módulos de seguridad base, finca, ingesta de telemetría, función de inferencia, reglas de firewall y asociación del centro de acopio. El estado remoto es un bucket cifrado, versionado y con bloqueo nativo por ambiente.
+      Usamos Terraform, porque las 28 reglas obligatorias del proyecto están escritas para él. Planeamos un ambiente patrón, qa. Las piezas reutilizables ya fusionadas son ocho módulos de referencia, publicados hasta la etiqueta v0.4.0: red, backend de estado, seguridad base, finca, ingesta de telemetría, funciones de inferencia, reglas de firewall y asociación del centro de acopio, con 142 ejecuciones de prueba en modo plan. El estado remoto es un bucket cifrado, versionado y con bloqueo nativo por ambiente.
       La configuración y los secretos están separados para dev, qa y pdn con tfvars de ejemplo; las credenciales entran por OIDC de GitHub Actions y las variables por TF_VAR, así que los secretos nunca quedan en el repositorio ni en el estado.
       El diagrama muestra las trece cajas, D01 a D13, una por tarea. Lo que dejamos fuera es igual de deliberado: la zona de aterrizaje está diseñada pero no codificada, no instanciamos las 200 fincas ni los tres centros, y las otras tres funciones y la consulta son solo arquitectura. Observabilidad, notas de versión, costos, sistema de diseño y esta defensa son entregables aparte, fuera de las 100 horas. El ADR-003 y la sección 2 del plan tienen el razonamiento.
 
@@ -454,15 +473,17 @@ slides:
       - type: status
         items:
           - {state: merged, label: "Fusionado", text: "CI con formato, validate, tflint, Trivy, pruebas, plan contra Floci e Infracost (B11)"}
-          - {state: merged, label: "Fusionado", text: "CD con aprobación humana para producción (B12)"}
-          - {state: review, label: "En revisión", text: "Cableado de la asociación del centro en el stack (B05)"}
+          - {state: merged, label: "Fusionado", text: "Asociación del centro: módulo v0.4.0 y cableado en el stack de red (B05)"}
+          - {state: review, label: "En curso", text: "CD con aprobación humana: pipeline y runbook fusionados, tarea abierta (B12)"}
+          - {state: review, label: "En curso", text: "Reglas de firewall del patrón (B07) y módulo patrón del ADR-003 (B09)"}
           - {state: pending, label: "Pendiente", text: "Validación final del plan ejecutable (B13, roadmap#33)"}
-    source: "Plan de 100 horas, secciones 4.1, 6.1, 8 y 9 · aroma-pacifico-infrastructure PR #9 a #14"
+    source: "Plan de 100 horas, secciones 4.1, 6.1, 8 y 9 · aroma-pacifico-infrastructure PR #4, #12, #14 y #19 · tablero del roadmap"
     presenter: "JR2"
     time: "1:15"
     notes: |
       Los números vienen del plan de 100 horas. Trece tareas, B01 a B13, divididas en 19 partes, cada una con dueño, orden, dependencia y caja. El total es 98 horas con 2 horas de reserva. Ninguna tarea pasa de 10 horas. Cuatro personas a 5 horas diarias por 10 días dan 200 horas de capacidad, y el plan reserva el 49 por ciento. El cronograma termina en la hora de trabajo 38 de 50, el día 8 de 10.
-      Estado de hoy: la integración continua está fusionada, con formato, validación, tflint, Trivy, pruebas, un plan contra el emulador Floci y la estimación de costo con Infracost. El despliegue continuo con aprobación humana para producción también está fusionado. El cableado de la asociación del centro en el stack está en revisión.
+      Estado de hoy, según el tablero del roadmap: la integración continua está terminada, con formato, validación, tflint, Trivy, pruebas, un plan contra el emulador Floci y la estimación de costo con Infracost. La asociación del centro también está terminada: el módulo v0.4.0 y su cableado en el stack de red. Con ella, el plan del stack de red contra Floci propone 163 recursos por agregar en qa y 167 en pdn, sin cambios ni destrucciones; es evidencia de B05, no el resultado de B13.
+      Siguen en curso tres tareas: el despliegue continuo con aprobación humana para producción, cuyo pipeline y runbook ya están fusionados pero la tarea sigue abierta (B12); las reglas de firewall del patrón (B07) y el módulo patrón aprobado en el ADR-003 (B09).
       El riesgo principal era cómo evidenciar un plan real sin una cuenta: el asesor aceptó el emulador Floci como destino del plan. La validación final, B13, está PENDIENTE: issue 33 del roadmap. Decir que no está fusionada y no describir un resultado.
 
   # Slide 15
@@ -557,7 +578,7 @@ slides:
       - type: callout
         h: 64
         tone: subtle
-        text: "Abierto, a cargo de la Federación: respuestas de la sesión de aclaración, umbrales y contrato del operador de drones (PD-230). Abierto en el equipo: validación final B13 y ADR-004."
+        text: "Abierto, a cargo de la Federación: respuestas de la sesión de aclaración, umbrales y contrato del operador de drones (PD-230). Abierto en el equipo: B07, B09 y B12 en curso y la validación final B13 pendiente."
       - type: callout
         h: 44
         text: "Nada se aplicó ni se desplegó: toda latencia, recuperación y capacidad es una meta de diseño."
@@ -566,7 +587,7 @@ slides:
     time: "0:30"
     notes: |
       Para cerrar: la conectividad está resuelta flujo por flujo, con un búfer y una conducta sin señal. El modo de vuelo es combinado, con autorización humana. El código cabe porque su alcance es un ambiente y un patrón.
-      Algunas decisiones siguen abiertas y son de la Federación: las respuestas de la sesión de aclaración, los umbrales y el contrato del operador de drones. Del lado del equipo quedan la validación final B13 y el ADR-004 en revisión.
+      Algunas decisiones siguen abiertas y son de la Federación: las respuestas de la sesión de aclaración, los umbrales y el contrato del operador de drones. Del lado del equipo, B07, B09 y B12 siguen en curso y la validación final B13 está pendiente. El ADR-004 está fusionado con estado propuesto.
       Toda latencia, tiempo de recuperación y capacidad que dimos es una meta de diseño, y las pruebas son trabajo futuro. Gracias. Recibimos sus preguntas.
 
   - kind: closing
@@ -579,6 +600,6 @@ slides:
       - ¿Por qué AWS y qué significa la segunda nube preparada? SR1. Una región con almacenamiento, funciones e inferencia administrada; Azure solo como destino de exportación abierto, sin despliegue (ADR-001).
       - ¿Qué pasa con una finca sin señal más de 24 horas? SR2. El búfer guarda máximo 24 horas; lo más antiguo se descarta, se cuenta y se reporta como hueco, y el nodo silencioso levanta una detección.
       - ¿Cómo saben que la alerta llega en menos de 5 minutos? JR1. No lo afirmamos como medición: es una meta con SLI definido, 95 por ciento en 28 días (ASM-224).
-      - ¿Corrieron un plan? JR2. El plan corre contra el emulador Floci en la CI, con Infracost; la validación final B13 está pendiente. Nada se aplicó.
+      - ¿Corrieron un plan? JR2. El plan corre contra el emulador Floci en la CI, con Infracost; con la asociación del centro, el stack de red propone 163 recursos en qa. La validación final B13 está pendiente. Nada se aplicó.
       - ¿Cuánto cuesta el piloto? JR2. USD 2.707,27 en un mes normal y USD 10.638,75 en cosecha; AWS USD 558,94 y USD 573,75.
       - ¿Qué ensayaron? Todos. Responder solo con lo registrado en la bitácora de ensayos del guion.

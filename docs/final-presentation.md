@@ -4,7 +4,7 @@
 |---|---|
 | Status | Agent draft, rehearsal pending |
 | Roadmap issue | aroma-pacifico/aroma-pacifico-roadmap#38 (A25) |
-| Length | 20 minutes, 18 slides, four presenters by role |
+| Length | 20 minutes, 18 script slides, four presenters by role; the deck has 25 pages with the cover, the team slide, four part dividers and the questions slide |
 | Companion files | [Speaker script](speaker-script.md), [Defense questions and short answers](defense-qa.md) |
 | Slide file | [`deck/aroma-pacifico-sustentacion.pptx`](../deck/aroma-pacifico-sustentacion.pptx) (Spanish, with speaker notes) and its [PDF export](../deck/aroma-pacifico-sustentacion.pdf); see the [README](../README.md#the-slide-file) |
 | Source of requirements | `docs/case/case-statement.pdf` |
@@ -21,6 +21,10 @@ This deck is the slide content only. Each slide lists its on-screen text, its so
 | 4 | JR2 | 13 to 18 | 6:00 | 20:00 | Why the infrastructure code fits 100 hours, release notes, costs, design system and close |
 
 The case statement asks the team to sustain three things: the connectivity (part 2), the flight mode (part 3) and why the infrastructure code fits 100 hours (part 4). Each has the longest block of its part.
+
+## Before slide 1: cover and team (no own time)
+
+The cover carries the title, the date and the four presenters with their names, deck role and job role. The team slide follows it: a header strip ("Universidad Icesi", "Sustentación técnica" and the page number), four portrait cards of equal size with a 3:4 crop, the name in two lines (first names, then surnames) in the brand primary color and the role below, in presentation order. Each presenter says their name and role; the time counts inside slide 1. The part dividers then show the presenter's name and role with the part time. Names and photos live only in the deck (`deck/content.yaml` and `deck/assets/team/`).
 
 ## Part 1: Framing and base (SR1, 4:00)
 
@@ -139,7 +143,7 @@ Source: [drone service](https://github.com/aroma-pacifico/aroma-pacifico-archite
 | Codified inference pattern: merged `modules/inference-functions` (box D10, B10) with SQS queue, dead-letter queue, least-privilege IAM role, and Lambda invoking Amazon Nova Pro via Bedrock | `aroma-pacifico-terraform-modules` PR #14 |
 | Standardized result contract: functions persist timestamp (`result_at`), confidence, and source object (`source`); zero persistent compute (no EC2, ECS, or provisioned concurrency) | Same; case statement, Part E |
 | Data leaving Colombia: stored and processed in `us-east-1`; only screened crop images and alert-opening readings reach the model | Architecture, section 1 |
-| Drone capability orchestrator (event-driven): the custom bus and its rules route each mission event to its capability, per-function queues buffer it with retries and a dead-letter queue, and the mission state machine in DynamoDB is the source of truth; no central workflow engine in the pilot | [ADR-004](https://github.com/aroma-pacifico/aroma-pacifico-architecture/blob/main/docs/adr/adr-004-drone-capability-orchestration.md) |
+| Drone capability orchestrator (event-driven): the custom bus and its rules route each mission event to its capability, per-function queues buffer it with retries and a dead-letter queue, and the mission state machine in DynamoDB is the source of truth; no central workflow engine in the pilot | [ADR-004](https://github.com/aroma-pacifico/aroma-pacifico-architecture/blob/main/docs/adr/adr-004-drone-capability-orchestration.md), merged with status Proposed; the orchestrator is labelled in `complete/architecture.svg` and `flows/inference-functions.svg` (G05) |
 
 ### Slide 12: Observability and the two SLOs (1:15)
 
@@ -158,13 +162,13 @@ Image: `architecture-iac.png`, the diagram with boxes D01 to D13.
 
 | What the code covers | What it deliberately leaves out |
 |---|---|
-| Terraform, one tool whose 26 binding rules already exist | The landing zone (designed, not coded) |
+| Terraform, one tool whose 28 binding rules already exist | The landing zone (designed, not coded) |
 | One pattern environment planned (`qa`), one stack per domain | The 200 farms and the three centers |
-| Reusable IaC modules: telemetry ingestion (`modules/telemetry-ingestion`), farm monitoring (`modules/farm-monitoring`), base security (`modules/security`, B06/PR #12), and inference function pattern (`modules/inference-functions`, B10/PR #14) | The other three inference functions, the sack lookup module, application code |
+| Eight reference modules, tagged up to `v0.4.0`: network, state backend, base security (B06, PR #12), farm (B08), telemetry ingestion, inference functions (B10, PR #14), firewall rules and collection-center association (B05, PR #21); 142 plan-mode test runs in 17 test files | The other three inference functions, the sack lookup module, application code |
 | Remote state: one encrypted, versioned, natively locked S3 bucket per environment | CodeDeploy deployments and manual cluster infrastructure |
 | Environment isolation and secrets (B03/PR #6): `environments/{dev,qa,pdn}/*.tfvars.example`, external injection via GitHub OIDC and `TF_VAR_*`, no plaintext secrets in repository or state (ADR-003) | Observability, release notes, costs, design system and this defense (separate deliverables outside the 100 hours) |
 
-Sources: [ADR-003](https://github.com/aroma-pacifico/aroma-pacifico-architecture/blob/main/docs/adr/adr-003-iac-tool-remote-state-and-pattern-module.md), [100-hour plan, section 2](https://github.com/aroma-pacifico/aroma-pacifico-architecture/blob/main/docs/iac-plan-100h.md#2-scope-what-counts-in-the-100-hours), `aroma-pacifico-infrastructure` PR #6, and `aroma-pacifico-terraform-modules` PRs #12 and #14.
+Sources: [ADR-003](https://github.com/aroma-pacifico/aroma-pacifico-architecture/blob/main/docs/adr/adr-003-iac-tool-remote-state-and-pattern-module.md), [100-hour plan, section 2](https://github.com/aroma-pacifico/aroma-pacifico-architecture/blob/main/docs/iac-plan-100h.md#2-scope-what-counts-in-the-100-hours), `aroma-pacifico-infrastructure` PR #6, and `aroma-pacifico-terraform-modules` PRs #12, #14 and #21 (tag `v0.4.0`).
 
 ### Slide 14: The 100-hour plan in numbers (1:15)
 
@@ -175,8 +179,9 @@ Sources: [ADR-003](https://github.com/aroma-pacifico/aroma-pacifico-architecture
 | Largest task | 10 hours (limit is 10) | Plan, section 9 |
 | Capacity | 4 people at 5 hours a day for 10 working days is 200 hours; 49 percent booked | Plan, section 6.1 |
 | Finish | Working hour 38 of 50, Day 8 of 10 | Plan, section 9 |
-| Top risks | Plan evidence needs a human-provisioned account (PD-019); feature behavior not yet re-checked live (PD-200) | Plan, section 8 |
-| Pipeline evidence (B11, B12) | CI with formatting, validation, tflint, Trivy, tests, a plan against the Floci emulator and Infracost; CD with production approval | `aroma-pacifico-infrastructure` PRs #9, #10, #11 and #14 (merged) |
+| Top risks | Plan evidence without an AWS account: the faculty advisor accepted the Floci emulator as the plan target (pc-iac-028), and PD-019 stays open until B13; feature behavior not yet re-checked live (PD-200) | Plan, section 8 |
+| Done on the roadmap board (B11, B05) | CI with formatting, validation, tflint, Trivy, tests, a plan against the Floci emulator and Infracost; the collection-center association module `v0.4.0` wired into the network stack, whose Floci plan proposes 163 resources to add in qa and 167 in pdn, with no change or destroy | `aroma-pacifico-infrastructure` PRs #4, #9 to #12; `docs/b05-final-delivery.md` |
+| In progress on the roadmap board (B12, B07, B09) | CD with production approval: pipeline and runbook merged, issue still open; pattern firewall rules; pattern module of ADR-003 | `aroma-pacifico-infrastructure` PRs #14 and #19; roadmap board |
 | Result of the final validation (B13) | PENDING: source aroma-pacifico/aroma-pacifico-roadmap#33 | not merged |
 
 ### Slide 15: Controlled change and release notes (1:00)
@@ -215,6 +220,7 @@ Sources: [ADR-003](https://github.com/aroma-pacifico/aroma-pacifico-architecture
 |---|---|
 | Three things sustained: connectivity, flight mode, IaC in 100 hours | Slides 5 to 9 and 13 to 14 |
 | Open decisions owned by the Federation (clarification session answers, thresholds, drone operator contract RFP validation) | [Architecture, section 17](https://github.com/aroma-pacifico/aroma-pacifico-architecture/blob/main/docs/architecture.md#17-open-decisions-for-the-defense) |
+| Open in the team: B07, B09 and B12 in progress, final validation B13 pending | Roadmap board |
 | Nothing was applied or deployed; every latency, recovery time and capacity is a design target | Architecture, section 2 |
 | Questions | [Defense questions](defense-qa.md) |
 
@@ -222,11 +228,12 @@ Sources: [ADR-003](https://github.com/aroma-pacifico/aroma-pacifico-architecture
 
 | Slide | Missing content | Source issue | Status / Action when it merges |
 |---|---|---|---|
-| 14 | Result and evidence of the final validation of the executable plan | aroma-pacifico/aroma-pacifico-roadmap#33 (B13) | PENDING: issue open on 2026-11-11; the deck shows it as pending and states no result |
-| 14 | CI pipeline with an executable plan | aroma-pacifico/aroma-pacifico-roadmap#31 (B11) | RESOLVED: gates, Floci plan job and Infracost estimate merged in `aroma-pacifico-infrastructure` PRs #9, #10 and #11; follow-up PR #12 still open |
-| 14 | CD pipeline with production approval | aroma-pacifico/aroma-pacifico-roadmap#32 (B12) | RESOLVED: merged in `aroma-pacifico-infrastructure` PR #14; runbook PR #15 still open |
-| 13, 14 | Association between the environment and a collection center | aroma-pacifico/aroma-pacifico-roadmap#25 (B05) | PARTIAL: module merged in `aroma-pacifico-terraform-modules` PR #21; stack wiring in `aroma-pacifico-infrastructure` PR #4 still open, shown as "En revisión" |
-| 11 | Event-driven drone capability orchestrator (ADR-004) | `aroma-pacifico-architecture` PR #50, `aroma-pacifico-diagrams` PR #23 | OPEN: both pull requests in review; the deck says "ADR-004, en revisión" |
+| 14 | Result and evidence of the final validation of the executable plan | aroma-pacifico/aroma-pacifico-roadmap#33 (B13) | PENDING: issue open and in Backlog on the board on 2026-11-11; the deck shows it as pending and states no result |
+| 14 | CI pipeline with an executable plan | aroma-pacifico/aroma-pacifico-roadmap#31 (B11) | RESOLVED: gates, Floci plan job and Infracost estimate merged in `aroma-pacifico-infrastructure` PRs #9 to #12; Done on the board |
+| 14 | CD pipeline with production approval | aroma-pacifico/aroma-pacifico-roadmap#32 (B12) | OPEN: pipeline (PR #14) and runbook (PR #19) merged, but the issue is In progress on the board; the deck says "En curso" |
+| 14 | Pattern firewall rules and the pattern module of ADR-003 | aroma-pacifico/aroma-pacifico-roadmap#27 (B07), aroma-pacifico/aroma-pacifico-roadmap#29 (B09) | OPEN: both In progress on the board; the deck says "En curso" |
+| 13, 14 | Association between the environment and a collection center | aroma-pacifico/aroma-pacifico-roadmap#25 (B05) | RESOLVED: module merged in `aroma-pacifico-terraform-modules` PR #21 (tag `v0.4.0`) and stack wiring in `aroma-pacifico-infrastructure` PR #4; Done on the board |
+| 11 | Event-driven drone capability orchestrator (ADR-004) | `aroma-pacifico-architecture` PR #50, `aroma-pacifico-diagrams` PR #23 | RESOLVED: both merged (G05 Done); ADR-004 has status Proposed and the deck says "ADR-004, propuesto"; slide 11 and slide 3 crops re-rendered with the labelled orchestrator |
 | 16 | Every amount: normal month, harvest month, farm hardware, drone campaign, invocation cost | aroma-pacifico/aroma-pacifico-roadmap#36 (A23) | RESOLVED: incorporated from merged `docs/pilot-costs.md` (PRs #44 and #46, reconciled totals) |
 | 17 | The design system and its application to the three apps | aroma-pacifico/aroma-pacifico-roadmap#37 (A24) | RESOLVED: incorporated from merged design system repository (PR #4) |
 | 3, 5 to 8, 10, 11, 13, 15 | Final diagram exports, if the diagrams repository changes them | aroma-pacifico-diagrams | RESOLVED for this deck: crops rendered from the merged SVG exports; rerun `deck/build_deck.py --refresh-assets` if they change |
