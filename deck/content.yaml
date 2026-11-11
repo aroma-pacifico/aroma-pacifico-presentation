@@ -71,9 +71,9 @@ slides:
       - "El piloto y la sustentación"
       - "Qué cambia desde 2020"
       - "La arquitectura de un vistazo"
-      - "Gobierno y seguridad"
+      - "Gobierno, seguridad y control del cambio"
     notes: |
-      Parte 1, a cargo de SR1: 4 minutos, diapositivas 1 a 4. Sin tiempo propio; pasar de inmediato a la diapositiva 1.
+      Parte 1, a cargo de SR1: 4 minutos, diapositivas 1 a 5. Sin tiempo propio; pasar de inmediato a la diapositiva 1.
 
   # Slide 1
   - kind: content
@@ -100,11 +100,11 @@ slides:
           - {icon: clock, title: "IaC en 100 horas", text: "Un ambiente patrón y su plan ejecutable"}
     source: "Enunciado del caso, «Contexto» y «Cifras del piloto» · Arquitectura, secciones 1 y 16"
     presenter: "SR1"
-    time: "0:45"
+    time: "0:35"
     notes: |
-      Buenos días. Presentamos la actualización 2026 del piloto de trazabilidad de café de Aroma Pacífico: 200 fincas en Cauca, Huila y Tolima, tres centros de acopio, 60 transportadores y la entrega en el puerto de Buenaventura.
-      La entrega es solo de plan: diseño, Terraform reutilizable, costos y esta sustentación. No aplicamos ni desplegamos nada. El plan se ejecuta contra el emulador Floci y la integración continua estima el costo con Infracost.
-      Somos cuatro presentadores. Vamos a sustentar tres cosas: la conectividad, el modo de vuelo de los drones y por qué el código de infraestructura cabe en 100 horas. Todo lo que decimos está escrito en el documento de arquitectura, y nombramos la sección a medida que avanzamos.
+      Buenos días. Presentamos la actualización 2026 del piloto de trazabilidad de café de Aroma Pacífico: 200 fincas en Cauca, Huila y Tolima, tres centros de acopio, 60 transportadores y la entrega en Buenaventura.
+      La entrega es solo de plan: diseño, Terraform reutilizable, costos y esta sustentación. Nada se aplica ni se despliega; el plan corre contra el emulador Floci y la CI estima el costo con Infracost.
+      Sustentamos la conectividad, el modo de vuelo y por qué la IaC cabe en 100 horas, con énfasis en gobierno, plan, código y costos.
 
   # Slide 2
   - kind: content
@@ -122,12 +122,11 @@ slides:
           - ["Precios y servicios de 2020", "No son cotización válida: el documento de costos es nuevo (A23)"]
     source: "Arquitectura, secciones 5, 12 y 13 · Conectividad"
     presenter: "SR1"
-    time: "1:15"
+    time: "0:50"
     notes: |
-      El diseño de 2020 suponía cobertura de datos en la mayoría de las fincas y un equipo que publicaba directo al punto de ingesta. El centro de acopio y el puerto no tenían red.
-      Conservamos los requisitos que siguen vigentes y reemplazamos el supuesto de conectividad. Ahora cada flujo tiene un protocolo de salida, un búfer local de máximo 24 horas y una conducta definida cuando no hay señal.
-      Cada centro recibe una LAN segmentada y una WAN de 100 megabits. El puerto no recibe equipos de la Federación. Y la solución no depende de una generación móvil que los operadores apaguen.
-      Los precios, equipos y servicios de 2020 no son una cotización válida, así que los costos son nuevos. Lo que se conserva y lo que se retira está en la sección 13 del documento de arquitectura.
+      El diseño de 2020 suponía cobertura de datos en la mayoría de las fincas y un equipo que publicaba directo; el centro de acopio y el puerto no tenían red.
+      Ahora cada flujo tiene un protocolo de salida, un búfer local de máximo 24 horas y una conducta definida sin señal. Cada centro recibe una LAN segmentada y una WAN de 100 megabits, el puerto no recibe equipos y no dependemos de una generación móvil que se apague.
+      Los precios de 2020 no son cotización válida, así que los costos son nuevos. El detalle está en la sección 13 del documento de arquitectura.
 
   # Slide 3
   - kind: content
@@ -159,11 +158,11 @@ slides:
               - {icon: check-circle, title: "Cajas D01 a D13", text: "Lo que construye el código de infraestructura"}
     source: "aroma-pacifico-diagrams, complete/architecture.svg (recorte de la vista de ejecución)"
     presenter: "SR1"
-    time: "1:15"
+    time: "0:50"
     notes: |
-      Este es el diagrama completo, en el repositorio de diagramas, carpeta complete. AWS es la nube principal, en una sola región, us-east-1. Azure está preparada como destino de exportación no desplegado, para el historial en formato abierto y los objetos del dron; así no duplicamos la plataforma.
-      Una organización tiene una cuenta de administración y cinco cuentas miembro: seguridad, red, producción, pruebas y desarrollo.
-      En el borde ven los nodos de finca, la estación de tierra del dron, las apps y las LAN de los centros. Las insignias numeradas D01 a D13 marcan lo que construye el código de infraestructura; JR2 vuelve a ellas en la parte 4.
+      Este es el diagrama completo, en la carpeta complete del repositorio de diagramas. AWS es la nube principal, en una sola región, us-east-1; Azure queda preparada como destino de exportación, sin desplegar (ADR-001).
+      Una organización tiene una cuenta de administración y cinco cuentas miembro: seguridad, red, producción, pruebas y desarrollo. En el borde están los nodos de finca, la estación de tierra del dron, las apps y las LAN de los centros.
+      Las insignias D01 a D13 marcan lo que construye el código; JR2 vuelve a ellas en la parte 4.
 
   # Slide 4
   - kind: content
@@ -185,30 +184,59 @@ slides:
         text: "Datos cifrados con TLS en tránsito y llaves propias en reposo; retención de 5 años."
     source: "Zona de aterrizaje · Seguridad e identidad, sección 10 · aroma-pacifico-terraform-modules PR #12"
     presenter: "SR1"
-    time: "0:45"
+    time: "0:35"
     notes: |
-      El gobierno y la seguridad se aplican desde la raíz: políticas de control de servicios, una política de etiquetas, presupuestos y un trail de la organización. Las etiquetas reparten el costo por fincas, drones, centros, viajes y ambientes.
-      Seis roles tienen identidades separadas con mínimo privilegio. El módulo de seguridad base agrega ocho llaves administradas por el cliente con rotación, un pool de Cognito para el personal con MFA TOTP, un pool de campo sin contraseña, siete grupos de rol y un rol de revocación.
-      El MFA es obligatorio para el operador del centro, el operador del dron, el operador de plataforma y el agrónomo. Los datos se cifran en tránsito y en reposo y se guardan 5 años. El comprador ve solo origen, fechas de proceso, estado y variables de secado.
-      Si se pierde un nodo o un dron, su identidad se revoca de inmediato y deja de publicar. SR2 continúa con la conectividad.
+      La seguridad se aplica desde la raíz. Seis roles tienen identidades separadas con mínimo privilegio, y el MFA es obligatorio para operadores de centro, de dron y de plataforma, y para el agrónomo.
+      El módulo de seguridad agrega ocho llaves KMS con rotación, un pool de Cognito con MFA TOTP y siete grupos de rol. Los datos se cifran en tránsito y en reposo y se guardan 5 años, y un dron o un nodo perdido pierde su identidad de inmediato.
+
+  # Slide 5
+  - kind: content
+    part: 1
+    number: 5
+    eyebrow: "Parte 1 · Marco y base · SR1"
+    title: "También se gobierna el cambio: reglas, revisión y decisiones registradas"
+    blocks:
+      - type: stats
+        h: 104
+        items:
+          - {value: "7 SCP", label: "de servicio, aplicadas desde la raíz de la organización"}
+          - {value: "8 claves", label: "en la política de etiquetas; 5 reparten el costo"}
+          - {value: "28 reglas", label: "pc-iac vinculantes, comprobadas en la CI de cada PR"}
+          - {value: "292", label: "entradas del registro: 185 ASM y 107 PD, más 4 ADR"}
+      - type: cards
+        cols: 2
+        compact: true
+        items:
+          - {icon: scale, title: "Presupuestos y auditoría (A08)", text: "USD 650 en mes normal y USD 700 en cosecha, con alertas al 80 % y al 100 %; trail de la organización con 5 años de retención"}
+          - {icon: check-circle, title: "Compuertas del cambio", text: "Trunk-based y Conventional Commits verificados en cada PR; revisa un agente de otro proveedor de IA"}
+          - {icon: shield-check, title: "Solo plan", text: "Nadie ejecuta apply; producción cambiaría solo por el pipeline aprobado, como exige una SCP"}
+          - {icon: package, title: "Decisiones con ID", text: "ADR-001 nube, ADR-002 modo de vuelo, ADR-003 IaC y ADR-004 orquestador del dron"}
+    source: "Zona de aterrizaje, secciones 3, 5, 6 y 7 · standards/iac-rules · pr-conventions.yml · docs/decision-log.md"
+    presenter: "SR1"
+    time: "1:10"
+    notes: |
+      También gobernamos la plataforma y el cambio. Desde la raíz de la organización aplicamos siete políticas de control de servicios: no salir de la organización, solo us-east-1, proteger el trail, sin credenciales de larga duración, sin usuario raíz, etiquetas de costo obligatorias y cambios de producción solo por el pipeline.
+      La política de etiquetas fija ocho claves, y cinco reparten el costo. Los presupuestos son de 650 dólares en mes normal y 700 en cosecha, con alertas al 80 y al 100 por ciento, y el trail de la organización guarda cinco años.
+      En el código, las 28 reglas pc-iac son vinculantes y la CI comprueba en cada pull request las que se pueden verificar: formato, validación, lint, seguridad, pruebas, plan contra Floci e Infracost. Trabajamos trunk-based con Conventional Commits verificados, revisa un agente de otro proveedor de IA y nadie ejecuta apply: el proyecto termina en el plan.
+      Cada supuesto tiene un ID: 185 supuestos, 107 decisiones pendientes y cuatro ADR. SR2 continúa con la conectividad.
 
   - kind: divider
     part: 2
     title: "Conectividad"
     presenter: "SR2"
-    time: "5:00"
+    time: "3:45"
     agenda:
       - "Una regla para cada flujo"
       - "Sin señal"
       - "Centro de acopio y puerto"
       - "Firewall y lo que no compramos"
     notes: |
-      Parte 2, a cargo de SR2: 5 minutos, diapositivas 5 a 8. Es el primero de los tres puntos que pide sustentar el caso.
+      Parte 2, a cargo de SR2: 3:45, diapositivas 6 a 9. Es el primero de los tres puntos que pide sustentar el caso.
 
-  # Slide 5
+  # Slide 6
   - kind: content
     part: 2
-    number: 5
+    number: 6
     eyebrow: "Parte 2 · Conectividad · SR2"
     title: "Identidad, no dirección: más fincas suman identidades, no subredes"
     blocks:
@@ -221,17 +249,16 @@ slides:
           - {value: "10.80/13", label: "AWS, un /16 por ambiente; centros 10.41 a 10.43"}
     source: "Arquitectura, sección 12 · Plan de direccionamiento · network/connectivity.svg"
     presenter: "SR2"
-    time: "1:30"
+    time: "1:00"
     notes: |
-      La regla para cada flujo es identidad, no dirección. Las fincas, los teléfonos y los drones no tienen dirección en la nube. Se autentican con un certificado o un token. Por eso el patrón crece de 200 a 1.000 fincas sumando identidades, no subredes.
-      Un nodo de finca publica MQTT sobre TLS con un certificado X.509 al endpoint regional de IoT. Las lecturas de cultivo van cada 4 horas; las de secado, cada hora mientras hay un lote abierto.
-      Con ruta de entrega, la meta para la alerta es menos de 5 minutos desde la lectura fuera de rango. Es una meta de diseño, no una medición.
-      Las redes de los centros son 10.41, 10.42 y 10.43. La nube usa una superred aparte, 10.80.0.0 barra 13, con un barra 16 por ambiente, así que nada se superpone.
+      La regla para cada flujo es identidad, no dirección. Fincas, teléfonos y drones no tienen dirección en la nube; se autentican con un certificado o un token, y por eso el patrón crece de 200 a 1.000 fincas sumando identidades, no subredes.
+      El nodo de finca publica MQTT sobre TLS con un certificado X.509: cultivo cada 4 horas y secado cada hora con un lote abierto. La meta para la alerta con ruta de entrega es menos de 5 minutos; es una meta de diseño, no una medición.
+      Los centros usan 10.41 a 10.43 y la nube la superred 10.80.0.0 barra 13, sin superposición.
 
-  # Slide 6
+  # Slide 7
   - kind: content
     part: 2
-    number: 6
+    number: 7
     eyebrow: "Parte 2 · Conectividad · SR2"
     title: "Sin señal no se pierde nada: cada actor guarda y libera al confirmar"
     blocks:
@@ -244,17 +271,16 @@ slides:
           - {value: "Misión", label: "precargada; sin registro persistido no hay cierre"}
     source: "Arquitectura, sección 12 · supuestos ASM-073 a ASM-079 · network/no-signal-sequence.svg"
     presenter: "SR2"
-    time: "1:30"
+    time: "1:00"
     notes: |
-      Ahora el caso que importa: sin señal. El nodo de finca guarda un búfer cifrado de máximo 24 horas. Al reconectarse publica primero una lectura en vivo y luego vacía el búfer empezando por la más antigua. La alerta se levanta en ese vaciado, dentro de las 24 horas, y queda marcada como retrasada.
-      Para las fincas fuera de cobertura usamos el mismo nodo con un portador IP satelital. Eso significa ninguna radiobase nueva y ninguna visita semanal.
-      La app del transportador guarda una bandeja de salida cifrada. Registra una posición cada 5 minutos, nunca descarta un evento de custodia y adelgaza las posiciones antes de descartar alguna.
-      La misión del dron se carga antes del despegue, en la cabecera municipal o en el centro de acopio. Si cae el enlace, el vuelo sigue, el registro espera en el búfer y la fumigación no puede cerrarse sin él. La tabla completa está en la sección 12 del documento de arquitectura.
+      Sin señal no se pierde nada. El nodo guarda un búfer cifrado de máximo 24 horas; al volver publica primero una lectura en vivo y luego vacía el búfer, y la alerta tardía queda marcada.
+      Las fincas sin cobertura usan el mismo nodo con un portador satelital, sin radiobase nueva. La app del transportador guarda una bandeja cifrada, nunca descarta un evento de custodia y adelgaza posiciones antes de descartar alguna.
+      La misión del dron se carga antes del despegue; si cae el enlace, el vuelo sigue y la fumigación no cierra sin el registro. La tabla completa está en la sección 12 de arquitectura.
 
-  # Slide 7
+  # Slide 8
   - kind: content
     part: 2
-    number: 7
+    number: 8
     eyebrow: "Parte 2 · Conectividad · SR2"
     title: "Un patrón de LAN para tres centros; en el puerto, nada instalado"
     blocks:
@@ -267,16 +293,16 @@ slides:
           - {value: "Puerto", label: "sin equipos: solo el evento de entrega"}
     source: "Red del centro de acopio · Conectividad, sección 10 · network/collection-center.svg"
     presenter: "SR2"
-    time: "1:00"
+    time: "0:55"
     notes: |
-      En el centro de acopio, un solo patrón de LAN sirve a los tres departamentos con dos parámetros: la clave del centro y el segundo octeto. Siete zonas conservan los bloques reservados, cada una con su SSID, y la zona de visitantes no tiene ruta a logística ni a gerencia.
-      La WAN es de 100 megabits, con dos túneles IPsec a un Transit Gateway y un respaldo celular. Como aritmética sobre un supuesto de 50 por ciento de clientes activos en el pico de cosecha, el centro necesita 68 megabits de bajada y 17 de subida, y planeamos 90.
-      En el puerto de Buenaventura no desplegamos nada. La naviera conserva su telemetría y la plataforma registra solo el evento de entrega, que envía la app del transportador.
+      En el centro de acopio, un solo patrón de LAN sirve a los tres departamentos con dos parámetros: la clave del centro y el segundo octeto. Siete zonas, cada una con su SSID, y la de visitantes no tiene ruta a logística ni a gerencia.
+      La WAN es de 100 megabits, con dos túneles IPsec al Transit Gateway y respaldo celular. Con un supuesto de 50 por ciento de clientes activos en el pico, el centro necesita 68 megabits y planeamos 90.
+      En Buenaventura no desplegamos nada: la plataforma registra solo el evento de entrega desde la app del transportador.
 
-  # Slide 8
+  # Slide 9
   - kind: content
     part: 2
-    number: 8
+    number: 9
     eyebrow: "Parte 2 · Conectividad · SR2"
     title: "Firewall en cada centro y en la nube, sin NAT ni appliance de red"
     blocks:
@@ -293,29 +319,29 @@ slides:
               - "**Ahorro neto:** USD 10.856,40 al año (ASM-127)"
     source: "Política de firewall · Arquitectura, secciones 5 y 15 · Costos del piloto, sección 9 · security/firewall-policy.svg"
     presenter: "SR2"
-    time: "1:00"
+    time: "0:50"
     notes: |
-      Cada centro tiene un firewall perimetral y la nube tiene el suyo. Las tablas de política listan origen, destino, puerto, acción y si la regla se queda en el piloto o es temporal.
-      La capa de datos no tiene ruta a internet y ningún centro puede alcanzarla. También decidimos no comprar un NAT gateway ni un appliance de firewall de red: llegamos a los servicios de AWS por endpoints. Según el documento de costos, eso ahorra 10.856 dólares netos al año.
+      Cada centro tiene un firewall perimetral y la nube el suyo, con tablas de política que dicen origen, destino, puerto, acción y vigencia. La capa de datos no tiene ruta a internet y ningún centro la alcanza.
+      No compramos NAT gateway ni appliance de firewall: llegamos a AWS por endpoints, y según el documento de costos eso ahorra 10.856 dólares netos al año.
       La misma lógica de una misión que espera su enlace nos lleva a los drones. Continúa JR1.
 
   - kind: divider
     part: 3
     title: "Modo de vuelo y cargas de trabajo"
     presenter: "JR1"
-    time: "5:00"
+    time: "3:15"
     agenda:
       - "Modo de vuelo combinado"
       - "De la alerta al caso cerrado"
       - "Inferencia por eventos"
       - "Observabilidad y los dos SLO"
     notes: |
-      Parte 3, a cargo de JR1: 5 minutos, diapositivas 9 a 12. Es el segundo punto que pide sustentar el caso: el modo de vuelo.
+      Parte 3, a cargo de JR1: 3:15, diapositivas 10 a 13. Es el segundo punto que pide sustentar el caso: el modo de vuelo.
 
-  # Slide 9
+  # Slide 10
   - kind: content
     part: 3
-    number: 9
+    number: 10
     eyebrow: "Parte 3 · Modo de vuelo y cargas · JR1"
     title: "Solo el modo combinado cubre los cinco servicios obligatorios del dron"
     blocks:
@@ -330,16 +356,16 @@ slides:
         text: "Vuela un operador certificado contratado. Un agrónomo de la Federación autoriza cada fumigación como identidad humana con MFA (ADR-002)."
     source: "ADR-002, modo de vuelo y gobierno del dron"
     presenter: "JR1"
-    time: "1:30"
+    time: "1:00"
     notes: |
-      El modo de vuelo es combinado. El enunciado del caso tiene cinco servicios obligatorios y ninguno reemplaza a otro. El modo área delimita el lote y estima la cosecha. El modo precisión confirma la alerta, fumiga el foco y verifica el mismo lote. Solo el modo combinado cubre los cinco.
-      El cambio entre modos es un par de eventos persistidos: crop alert raised y luego focus confirmed. Por defecto una finca está en modo área, y solo un foco confirmado puede llevar a una orden de fumigación.
-      Vuela un operador certificado contratado. Un agrónomo de la Federación autoriza cada fumigación como identidad humana con MFA. Esto es el ADR-002.
+      El modo de vuelo es combinado. El caso tiene cinco servicios obligatorios y ninguno reemplaza a otro: el modo área delimita el lote y estima la cosecha; el modo precisión confirma la alerta, fumiga el foco y verifica el mismo lote. Solo el combinado cubre los cinco.
+      El cambio de modo es un par de eventos persistidos, crop alert raised y luego focus confirmed, y solo un foco confirmado lleva a una orden de fumigación.
+      Vuela un operador certificado contratado y un agrónomo de la Federación autoriza cada fumigación con MFA: es el ADR-002.
 
-  # Slide 10
+  # Slide 11
   - kind: content
     part: 3
-    number: 10
+    number: 11
     eyebrow: "Parte 3 · Modo de vuelo y cargas · JR1"
     title: "Cuatro compuertas impiden fumigar sin evidencia ni autorización humana"
     blocks:
@@ -355,16 +381,16 @@ slides:
           - {icon: location, title: "Cae el enlace", text: "La misión ya está cargada; el registro se publica al volver"}
     source: "Servicio de drones · complete/architecture.svg, flujo de plaga a fumigación"
     presenter: "JR1"
-    time: "1:15"
+    time: "0:50"
     notes: |
-      Este es el camino de la alerta al caso cerrado, en ocho pasos persistidos, tomado del diagrama completo. Cuatro compuertas lo protegen.
-      La orden no puede salir sin el polígono del lote y un registro de vuelo cerrado. Una fumigación sigue abierta hasta que llega el objeto de verificación. La autorización es humana y ningún disparador puede ejecutarla. Y si el enlace cae sobre el lote, la misión ya está cargada y el registro se publica cuando vuelve el enlace.
-      El estado no cambia hasta que ese registro se persiste. El detalle está en el documento del servicio de drones.
+      Este es el camino de la alerta al caso cerrado, en ocho pasos persistidos, con cuatro compuertas.
+      La orden no sale sin el polígono del lote y un registro de vuelo cerrado. La fumigación sigue abierta hasta que llega el objeto de verificación. La autorización es humana y ningún disparador la ejecuta.
+      Y si cae el enlace, la misión ya está cargada y el registro se publica al volver; el estado no cambia hasta persistirlo.
 
-  # Slide 11
+  # Slide 12
   - kind: content
     part: 3
-    number: 11
+    number: 12
     eyebrow: "Parte 3 · Modo de vuelo y cargas · JR1"
     title: "Cuatro funciones, una por disparador, sin cómputo esperando"
     blocks:
@@ -384,17 +410,15 @@ slides:
             text: "Un orquestador de capacidades del dron, dirigido por eventos, coordina las funciones: bus y reglas de EventBridge y una cola SQS por función (ADR-004, propuesto)."
     source: "Funciones de inferencia · ADR-004 · aroma-pacifico-terraform-modules PR #14 · flows/inference-functions.svg"
     presenter: "JR1"
-    time: "1:00"
+    time: "0:40"
     notes: |
-      La inferencia es dirigida por eventos. Cuatro funciones, una por disparador: el lote de telemetría, la confirmación del foco, el objeto de verificación y la estimación de cosecha.
-      Las coordina un orquestador de capacidades del dron dirigido por eventos: un bus de EventBridge con reglas y una cola SQS por función. Esa decisión es el ADR-004, fusionado con estado propuesto, y el orquestador ya aparece rotulado en el diagrama completo y en el de funciones de inferencia.
-      El módulo de funciones de inferencia implementa el patrón: una cola SQS de disparo, una cola de mensajes fallidos, un rol IAM de mínimo privilegio y una función Lambda que llama a Amazon Nova Pro en Bedrock. Cada función lee un objeto persistido, llama a la inferencia administrada en us-east-1 y persiste el resultado con hora, confianza y objeto de origen.
-      No entrenamos modelos y ningún cómputo espera objetos: cero EC2, cero contenedores, cero concurrencia aprovisionada. Si una invocación falla, el objeto de origen se queda y el estado del caso no cambia. Todo se guarda y procesa en us-east-1, y al modelo solo llegan imágenes de cultivo filtradas y lecturas que abren una alerta.
+      La inferencia es por eventos: cuatro funciones, una por disparador. Las coordina un orquestador de capacidades del dron dirigido por eventos, con bus y reglas de EventBridge y una cola SQS por función; es el ADR-004, fusionado con estado propuesto.
+      El módulo inference-functions implementa el patrón con cola, cola de fallidos, rol mínimo y una Lambda que llama a Amazon Nova Pro. Cero EC2 y cero concurrencia aprovisionada; al modelo solo llegan imágenes filtradas y lecturas que abren alerta.
 
-  # Slide 12
+  # Slide 13
   - kind: content
     part: 3
-    number: 12
+    number: 13
     eyebrow: "Parte 3 · Modo de vuelo y cargas · JR1"
     title: "Dos SLO: la alerta al caficultor y la consulta del saco"
     blocks:
@@ -414,30 +438,29 @@ slides:
         text: "Son metas de diseño: nada está desplegado y sus pruebas son trabajo futuro."
     source: "Observabilidad · supuestos ASM-224 y ASM-225"
     presenter: "JR1"
-    time: "1:15"
+    time: "0:45"
     notes: |
-      La observabilidad tiene dos SLO. Primero, la entrega de la alerta de cultivo: la proporción de alertas abiertas cuya primera recepción llega dentro de 300 segundos desde la lectura, con un objetivo de diseño de 95 por ciento en 28 días.
-      Segundo, la disponibilidad de la consulta del saco: solicitudes respondidas sin error de servidor ni limitación, con un objetivo de diseño de 99,5 por ciento en 28 días.
-      Esos objetivos son nuestros supuestos ASM-224 y ASM-225, porque el caso da el límite de 5 minutos y el tiempo de recuperación de 4 horas, pero no un objetivo.
-      También detectamos las cinco condiciones que nombra el caso: nodos silenciosos por más de 24 horas, alertas no entregadas, vuelos sin registro persistido, fumigaciones sin cierre e invocaciones fallidas que no cambiaron el estado. Hay dos tableros, operativo y de costos. El diseño está en el documento de observabilidad, y nada está desplegado. JR2 cierra con el código.
+      Dos SLO, ambos metas de diseño. La entrega de la alerta de cultivo: 95 por ciento de las alertas con primera recepción en 300 segundos, en 28 días. La consulta del saco: 99,5 por ciento de las solicitudes sin error de servidor ni limitación.
+      Son los supuestos ASM-224 y ASM-225, porque el caso da el límite de 5 minutos pero no un objetivo. Detectamos las cinco condiciones del caso y hay dos tableros, operativo y de costos.
+      JR2 cierra con el código, el plan y los costos.
 
   - kind: divider
     part: 4
     title: "IaC, cambio, costo y cierre"
     presenter: "JR2"
-    time: "6:00"
+    time: "9:00"
     agenda:
-      - "Por qué el código cabe en 100 horas"
-      - "El plan de 100 horas en números"
-      - "Cambio controlado y notas de versión"
-      - "Costo, sistema de diseño y cierre"
+      - "Por qué la IaC cabe en 100 horas"
+      - "El plan: horas, roles y estado"
+      - "Módulos, stacks y CI"
+      - "Costos, sistema de diseño y cierre"
     notes: |
-      Parte 4, a cargo de JR2: 6 minutos, diapositivas 13 a 18. Es el tercer punto que pide sustentar el caso: por qué la IaC cabe en 100 horas.
+      Parte 4, a cargo de JR2: 9 minutos, diapositivas 14 a 24. Es el tercer punto que pide sustentar el caso, por qué la IaC cabe en 100 horas, y concentra el énfasis del jurado: plan, IaC, costos y gobierno del cambio.
 
-  # Slide 13
+  # Slide 14
   - kind: content
     part: 4
-    number: 13
+    number: 14
     eyebrow: "Parte 4 · IaC, cambio, costo y cierre · JR2"
     title: "La IaC cabe en 100 horas porque cubre un ambiente patrón y nada más"
     blocks:
@@ -449,17 +472,16 @@ slides:
           - {icon: x-circle, title: "Deja fuera, a propósito", text: "Zona de aterrizaje, 200 fincas, 3 centros y entregables aparte"}
     source: "ADR-003 · Plan de 100 horas, sección 2 · complete/architecture-iac.svg"
     presenter: "JR2"
-    time: "2:00"
+    time: "1:00"
     notes: |
-      ¿Por qué el código de infraestructura cabe en 100 horas? Porque lo limitamos a lo que cuenta el caso: módulos, variables, estado remoto y un plan ejecutable de un ambiente.
-      Usamos Terraform, porque las 28 reglas obligatorias del proyecto están escritas para él. Planeamos un ambiente patrón, qa. Las piezas reutilizables ya fusionadas son ocho módulos de referencia, publicados hasta la etiqueta v0.4.0: red, backend de estado, seguridad base, finca, ingesta de telemetría, funciones de inferencia, reglas de firewall y asociación del centro de acopio, con 142 ejecuciones de prueba en modo plan. El estado remoto es un bucket cifrado, versionado y con bloqueo nativo por ambiente.
-      La configuración y los secretos están separados para dev, qa y pdn con tfvars de ejemplo; las credenciales entran por OIDC de GitHub Actions y las variables por TF_VAR, así que los secretos nunca quedan en el repositorio ni en el estado.
-      El diagrama muestra las trece cajas, D01 a D13, una por tarea. Lo que dejamos fuera es igual de deliberado: la zona de aterrizaje está diseñada pero no codificada, no instanciamos las 200 fincas ni los tres centros, y las otras tres funciones y la consulta son solo arquitectura. Observabilidad, notas de versión, costos, sistema de diseño y esta defensa son entregables aparte, fuera de las 100 horas. El ADR-003 y la sección 2 del plan tienen el razonamiento.
+      ¿Por qué la IaC cabe en 100 horas? Porque cubre lo que el caso cuenta: módulos, variables, estado remoto y un plan ejecutable de un ambiente patrón, qa.
+      Usamos Terraform porque las 28 reglas vinculantes están escritas para él. El estado vive en un bucket cifrado, versionado y con bloqueo nativo por ambiente, y los secretos quedan fuera del repositorio y del estado, con OIDC de GitHub Actions y TF_VAR.
+      El diagrama muestra las trece cajas, D01 a D13, una por tarea. Lo que queda fuera es deliberado: la zona de aterrizaje está diseñada pero no codificada, no instanciamos 200 fincas ni tres centros, y observabilidad, costos, sistema de diseño y esta defensa van fuera de las 100 horas. Es el ADR-003.
 
-  # Slide 14
+  # Slide 15
   - kind: content
     part: 4
-    number: 14
+    number: 15
     eyebrow: "Parte 4 · IaC, cambio, costo y cierre · JR2"
     title: "98 horas reservadas de 100 y ninguna tarea de más de 10 horas"
     blocks:
@@ -472,24 +494,137 @@ slides:
           - {value: "Día 8", label: "fin en la hora 38 de 50"}
       - type: status
         items:
-          - {state: merged, label: "Fusionado", text: "CI con formato, validate, tflint, Trivy, pruebas, plan contra Floci e Infracost (B11)"}
-          - {state: merged, label: "Fusionado", text: "Asociación del centro: módulo v0.4.0 y cableado en el stack de red (B05)"}
-          - {state: review, label: "En curso", text: "CD con aprobación humana: pipeline y runbook fusionados, tarea abierta (B12)"}
-          - {state: review, label: "En curso", text: "Reglas de firewall del patrón (B07) y módulo patrón del ADR-003 (B09)"}
-          - {state: pending, label: "Pendiente", text: "Validación final del plan ejecutable (B13, roadmap#33)"}
+          - {state: merged, label: "Terminadas: 9", text: "B01 a B06, B08, B10 y B11: repositorios, estado, variables, red, asociación del centro, seguridad, finca, inferencia y CI con plan en Floci e Infracost"}
+          - {state: review, label: "En curso: 3", text: "B07 y B09: módulos publicados (v0.3.0 y v0.4.0), falta el cableado en el stack; B12: pipeline de CD y runbook fusionados"}
+          - {state: pending, label: "Pendiente: 1", text: "B13: validación final del plan ejecutable (roadmap#33); sin resultado que contar"}
     source: "Plan de 100 horas, secciones 4.1, 6.1, 8 y 9 · aroma-pacifico-infrastructure PR #4, #12, #14 y #19 · tablero del roadmap"
     presenter: "JR2"
-    time: "1:15"
+    time: "0:50"
     notes: |
-      Los números vienen del plan de 100 horas. Trece tareas, B01 a B13, divididas en 19 partes, cada una con dueño, orden, dependencia y caja. El total es 98 horas con 2 horas de reserva. Ninguna tarea pasa de 10 horas. Cuatro personas a 5 horas diarias por 10 días dan 200 horas de capacidad, y el plan reserva el 49 por ciento. El cronograma termina en la hora de trabajo 38 de 50, el día 8 de 10.
-      Estado de hoy, según el tablero del roadmap: la integración continua está terminada, con formato, validación, tflint, Trivy, pruebas, un plan contra el emulador Floci y la estimación de costo con Infracost. La asociación del centro también está terminada: el módulo v0.4.0 y su cableado en el stack de red. Con ella, el plan del stack de red contra Floci propone 163 recursos por agregar en qa y 167 en pdn, sin cambios ni destrucciones; es evidencia de B05, no el resultado de B13.
-      Siguen en curso tres tareas: el despliegue continuo con aprobación humana para producción, cuyo pipeline y runbook ya están fusionados pero la tarea sigue abierta (B12); las reglas de firewall del patrón (B07) y el módulo patrón aprobado en el ADR-003 (B09).
-      El riesgo principal era cómo evidenciar un plan real sin una cuenta: el asesor aceptó el emulador Floci como destino del plan. La validación final, B13, está PENDIENTE: issue 33 del roadmap. Decir que no está fusionada y no describir un resultado.
+      Los números del plan: trece tareas, B01 a B13, en 19 partes; 98 horas reservadas y 2 de reserva; ninguna tarea de más de 10 horas; 49 por ciento de 200 horas de capacidad, y fin en la hora 38 de 50, el día 8.
+      Estado de hoy en el tablero del roadmap: nueve tareas terminadas, entre ellas la CI con plan contra Floci e Infracost y la asociación del centro. Tres en curso: las reglas de firewall y el módulo patrón, cuyos módulos ya están publicados y les falta el cableado, y el CD, cuyo pipeline y runbook ya están fusionados.
+      La validación final B13 está PENDIENTE: issue 33 del roadmap. No describir un resultado.
 
-  # Slide 15
+  # Slide 16
   - kind: content
     part: 4
-    number: 15
+    number: 16
+    eyebrow: "Parte 4 · IaC, cambio, costo y cierre · JR2"
+    title: "Carga por rol: 19 partes, primero el módulo y luego el cableado"
+    blocks:
+      - type: split
+        ratio: 0.6
+        left:
+          - type: table
+            columns: ["Rol", "Partes", "Semana 1", "Semana 2", "Total"]
+            widths: [0.9, 3.1, 1.1, 1.1, 0.9]
+            align: "llrrr"
+            total: true
+            rows:
+              - ["SR1", "B03, B06a, B06b, B10, B13a", "21 h", "6 h", "27 h"]
+              - ["SR2", "B07a, B07b, B09a, B09b, B12", "16 h", "10 h", "26 h"]
+              - ["JR1", "B01, B04a, B04b, B11a, B11b", "18 h", "4 h", "22 h"]
+              - ["JR2", "B02, B05, B08, B13b", "10 h", "13 h", "23 h"]
+              - ["Equipo", "19 partes", "65 h", "33 h", "98 h"]
+        right:
+          - type: cards
+            cols: 1
+            compact: true
+            items:
+              - {icon: package, title: "Partes a y b", text: "B04, B06, B07, B09, B11 y B13 se dividen: a es el módulo o la primera entrega; b, el cableado en el stack o su extensión"}
+              - {icon: clock, title: "Límites", text: "Nadie pasa de 25 horas por semana ni de 5 por día"}
+              - {icon: calendar, title: "Todo el proyecto", text: "298 horas estimadas en 42 tareas; la IaC son 98, dentro del tope de 100"}
+    source: "Plan de 100 horas, secciones 4.1 y 6.5 · Planeacion_Esfuerzo_AromaPacifico.xlsx, hoja Resumen"
+    presenter: "JR2"
+    time: "0:50"
+    notes: |
+      La carga se reparte por rol, según la sección 6.5 del plan. SR1 lleva 27 horas, 21 en la semana 1; SR2 26; JR1 22; y JR2 23, la mayor parte en la semana 2. Nadie pasa de 25 horas por semana ni de 5 por día.
+      Seis tareas se dividen en dos partes: la parte a es el módulo o la primera entrega, y la parte b el cableado en el stack o su extensión. Por eso trece tareas son 19 partes.
+      En todo el proyecto, el libro de planeación estima 298 horas en 42 tareas, de las que la IaC son 98, dentro del tope de 100.
+
+  # Slide 17
+  - kind: content
+    part: 4
+    number: 17
+    eyebrow: "Parte 4 · IaC, cambio, costo y cierre · JR2"
+    title: "Ocho módulos públicos, versionados por etiqueta, uno por caja"
+    blocks:
+      - type: table
+        columns: ["Módulo", "Desde", "Caja", "Qué crea"]
+        widths: [2.2, 0.8, 0.7, 6.3]
+        rows:
+          - ["network", "v0.1.0", "D04", "VPC, ocho subredes por nivel, tablas de rutas, ACL de red, endpoints y flow log de tráfico rechazado"]
+          - ["security", "v0.1.0", "D06", "Llaves KMS con rotación, pools y grupos de Cognito, y roles IAM de servicio y revocación"]
+          - ["inference-functions", "v0.1.0", "D10", "Cola SQS con cola de fallidos, mapeo de eventos, Lambda, rol IAM mínimo y logs"]
+          - ["farm", "v0.2.0", "D08", "Cosa IoT de una finca, certificado desde una CSR y su política, con la etiqueta FarmId"]
+          - ["state-backend", "v0.3.0", "D02", "Bucket S3 versionado, cifrado con KMS y sin acceso público, para el estado remoto"]
+          - ["firewall-rules", "v0.3.0", "D07", "Grupos de seguridad, listas de prefijos, políticas de endpoint y Web ACL de WAF"]
+          - ["collection-center-association", "v0.4.0", "D05", "Gateway de cliente, VPN, adjunto al Transit Gateway y lista de prefijos del centro"]
+          - ["telemetry-ingestion", "v0.4.0", "D09", "Política y regla de IoT, tabla DynamoDB, cola de errores y logs de ingesta"]
+      - type: callout
+        h: 44
+        tone: subtle
+        text: "Repositorio público: prefijo de nombre, sin proveedor ni backend, sin cuentas; 17 archivos y 142 ejecuciones de prueba en modo plan."
+    source: "aroma-pacifico-terraform-modules: etiquetas v0.1.0 a v0.4.0 y README de cada módulo · pc-iac-015"
+    presenter: "JR2"
+    time: "1:10"
+    notes: |
+      Este es el catálogo del repositorio público de módulos. Son ocho, cada uno con su caja del diagrama y la versión en que se publicó por etiqueta git: red, seguridad e inferencia en la v0.1.0; finca en la v0.2.0; backend de estado y reglas de firewall en la v0.3.0; y asociación del centro e ingesta de telemetría en la v0.4.0.
+      Cada módulo recibe un prefijo de nombre, no declara proveedor ni backend y no contiene cuentas ni datos del cliente, porque el repositorio es público.
+      Tienen 17 archivos de prueba con 142 ejecuciones en modo plan, y cada uno trae un ejemplo que la CI planifica contra Floci. Los stacks los consumen por etiqueta, así que subir de versión es un cambio revisado.
+
+  # Slide 18
+  - kind: content
+    part: 4
+    number: 18
+    eyebrow: "Parte 4 · IaC, cambio, costo y cierre · JR2"
+    title: "Cuatro stacks consumen módulos etiquetados; cada PR pasa 13 chequeos"
+    blocks:
+      - type: split
+        ratio: 0.5
+        left:
+          - type: table
+            h: 196
+            columns: ["Stack", "Módulos que consume"]
+            widths: [1.2, 2.8]
+            rows:
+              - ["state-backend", "state-backend v0.3.0"]
+              - ["network", "network v0.3.0 y collection-center-association v0.4.0"]
+              - ["security", "Aún sin módulo cableado"]
+              - ["workload", "Aún sin módulo cableado"]
+          - type: callout
+            tone: subtle
+            text: "Por PR: escaneo de secretos; por stack fmt, init, validate, tflint, Trivy y terraform test; plan en Floci; Infracost; 3 de convenciones. Módulos: 29 chequeos."
+        right:
+          - type: code
+            title: "Salida real de la CI · main 1adf80a · Floci plan e Infrastructure CI"
+            lines:
+              - "Plan (state-backend) qa"
+              - "> Plan: 8 to add, 0 to change, 0 to destroy."
+              - "Plan (network) qa"
+              - "> Plan: 163 to add, 0 to change, 0 to destroy."
+              - "Plan (network) pdn, emulator fixtures"
+              - "> Plan: 167 to add, 0 to change, 0 to destroy."
+              - "Plan (security) qa"
+              - "> No changes. Your infrastructure matches the configuration."
+              - "Plan (workload) qa"
+              - "> No changes. Your infrastructure matches the configuration."
+              - "Gates (network) terraform test"
+              - "> Success! 16 passed, 0 failed."
+              - "Gates (state-backend) terraform test"
+              - "> Success! 3 passed, 0 failed."
+    source: "aroma-pacifico-infrastructure: stacks/, .github/workflows/ y ejecuciones de main 1adf80a (2026-11-11) · checks del PR #19"
+    presenter: "JR2"
+    time: "1:10"
+    notes: |
+      La infraestructura tiene cuatro stacks: state-backend, network, security y workload. state-backend consume el módulo de estado v0.3.0, y network consume red v0.3.0 y asociación del centro v0.4.0. Security y workload todavía no tienen módulos cableados, por eso su plan dice sin cambios.
+      A la derecha está la salida real de la CI en main, commit 1adf80a: el plan de qa contra Floci propone 8 recursos en state-backend y 163 en network, y 167 en pdn, sin cambios ni destrucciones. Las pruebas pasan: 16 en network y 3 en state-backend.
+      Cada pull request de infraestructura pasa 13 chequeos: escaneo de secretos; por stack, formato, validate, tflint, Trivy y terraform test; el plan contra Floci; Infracost; y tres de convenciones. En el repositorio de módulos son 29, con 16 validaciones y 8 planes de ejemplo.
+
+  # Slide 19
+  - kind: content
+    part: 4
+    number: 19
     eyebrow: "Parte 4 · IaC, cambio, costo y cierre · JR2"
     title: "Producción aplica solo el plan revisado y aprobado, fuera de la cosecha"
     blocks:
@@ -502,15 +637,15 @@ slides:
           - {icon: calendar, title: "Notas de versión", text: "Dos plantillas, aplicación e infraestructura, con un ejemplo ficticio cada una"}
     source: "Automatización y pipelines · Notas de versión · pipelines/platform-pipeline.svg"
     presenter: "JR2"
-    time: "1:00"
+    time: "0:40"
     notes: |
-      El cambio es controlado. Cada pull request pasa compuertas y el plan de qa queda guardado. Producción aplica solo el plan guardado y revisado, después de una aprobación humana con nombre, y nunca entre las 05:00 y las 18:00 en semana de cosecha, salvo que haya un incidente.
-      Las notas de versión tienen dos plantillas, aplicación e infraestructura, cada una con un ejemplo completo. Dicen qué cambia, la ventana, el impacto, la aprobación, el aviso a la Federación y cómo revertir. Los ejemplos son ficticios y no afirman ninguna aprobación ni ningún aviso.
+      El cambio es controlado. Cada pull request pasa compuertas y el plan de qa queda guardado. Producción aplica solo ese plan, tras una aprobación humana con nombre y nunca de 05:00 a 18:00 en semana de cosecha, salvo un incidente; en este proyecto todo se detiene en el plan.
+      Las notas de versión tienen dos plantillas, aplicación e infraestructura, con un ejemplo ficticio cada una.
 
-  # Slide 16
+  # Slide 20
   - kind: content
     part: 4
-    number: 16
+    number: 20
     eyebrow: "Parte 4 · IaC, cambio, costo y cierre · JR2"
     title: "El piloto cuesta USD 2.707 al mes y USD 10.639 en un mes de cosecha"
     blocks:
@@ -529,17 +664,104 @@ slides:
           - {icon: check-circle, title: "Seis decisiones de ahorro", text: "Evitan USD 47.532,88 al año de operación y USD 230.000 de inversión"}
     source: "Costos del piloto, secciones 1, 3, 5, 6, 7 y 9 · ASM-230, ASM-231, ASM-250, ASM-251"
     presenter: "JR2"
-    time: "0:45"
+    time: "0:40"
     notes: |
-      Los costos están cuantificados en el documento de costos del piloto. Un mes normal de operación cuesta 2.707 dólares con 27 centavos en total, y un mes de cosecha 10.638 dólares con 75.
-      La nube de AWS cuesta 558 dólares con 94 en un mes normal y 573 con 75 en cosecha, bajo los topes de presupuesto de 650 y 700 dólares.
-      El hardware de una finca cuesta 370 dólares: nodo de cultivo, nodo de secado y kit de montaje; 74.000 dólares para las 200 fincas, con 920 dólares al mes de conectividad para 400 nodos. Los vuelos se contratan por misión: 8.500 dólares por campaña de cosecha y 45.250 dólares al año por 1.105 vuelos.
-      En cosecha, 108.270 invocaciones y 420 llamadas al modelo cuestan 5 dólares con 21 centavos. Seis decisiones de arquitectura evitan 47.532 dólares al año de operación y 230.000 dólares de inversión: endpoints en vez de Network Firewall y NAT, CloudFront delante de la consulta, Bedrock solo al abrir una alerta, hardware de modo dual, drones contratados en vez de flota propia y DynamoDB bajo demanda.
+      Ahora los costos, que están en el documento de costos del piloto. Un mes normal cuesta 2.707 dólares con 27 y un mes de cosecha 10.638 con 75.
+      La nube de AWS es solo una parte: 558,94 y 573,75, bajo los topes de 650 y 700. El hardware de una finca cuesta 370 dólares y la campaña de dron 8.500 por cosecha. En cosecha, 108.270 invocaciones y 420 llamadas al modelo cuestan 5,21. Veamos de dónde salen.
 
-  # Slide 17
+  # Slide 21
   - kind: content
     part: 4
-    number: 17
+    number: 21
+    eyebrow: "Parte 4 · IaC, cambio, costo y cierre · JR2"
+    title: "La cosecha la encarece el dron, no la nube: +USD 14,81 en AWS"
+    blocks:
+      - type: split
+        ratio: 0.53
+        left:
+          - type: table
+            columns: ["Dominio (USD)", "Inversión", "Mes normal", "Cosecha"]
+            widths: [2.3, 1.2, 1.2, 1.2]
+            align: "lrrr"
+            total: true
+            rows:
+              - ["Hardware de 200 fincas", "74.000,00", "920,00", "920,00"]
+              - ["3 centros de acopio", "8.550,00", "645,00", "645,00"]
+              - ["Campaña de dron", "0,00", "583,33", "8.500,00"]
+              - ["Nube AWS", "0,00", "558,94", "573,75"]
+              - ["Total del piloto", "82.550,00", "2.707,27", "10.638,75"]
+          - type: callout
+            h: 56
+            tone: subtle
+            text: "Por finca: USD 370 de hardware una vez y USD 4,60 al mes de conectividad."
+        right:
+          - type: table
+            columns: ["Nube AWS (USD)", "Normal", "Cosecha"]
+            widths: [2.4, 1, 1]
+            align: "lrr"
+            total: true
+            rows:
+              - ["Route 53 Resolver", "182,70", "182,70"]
+              - ["Transit Gateway", "110,50", "110,50"]
+              - ["VPN a los 3 centros", "109,50", "109,50"]
+              - ["Observabilidad", "60,72", "60,72"]
+              - ["Endpoints de interfaz", "58,90", "58,90"]
+              - ["S3 y KMS", "15,80", "15,80"]
+              - ["WAF, DynamoDB, CloudFront, IoT", "15,57", "15,57"]
+              - ["SMS al caficultor", "4,95", "14,85"]
+              - ["Cómputo por eventos e IA", "0,30", "5,21"]
+              - ["Total AWS", "558,94", "573,75"]
+    source: "Costos del piloto, secciones 1, 3.2 y 7.1 · ASM-230 a ASM-237"
+    presenter: "JR2"
+    time: "1:00"
+    notes: |
+      A la izquierda, el costo por dominio. La inversión inicial es de 82.550 dólares: 74.000 de hardware para 200 fincas y 8.550 para los tres centros. Al mes, el campo cuesta 920 y los centros 645 todo el año; lo que dispara el mes de cosecha es la campaña de dron, que pasa de 583 a 8.500 dólares.
+      A la derecha, la nube por servicio: lo que más pesa es la red privada, con el resolver de DNS, el Transit Gateway y las VPN. La cosecha solo sube la nube 14,81 dólares, por los SMS y la inferencia.
+      Por finca son 370 dólares de hardware y 4,60 al mes de conectividad. El documento no calcula un costo por saco.
+
+  # Slide 22
+  - kind: content
+    part: 4
+    number: 22
+    eyebrow: "Parte 4 · IaC, cambio, costo y cierre · JR2"
+    title: "Seis decisiones bajan el costo, y cada cambio se costea antes de fusionar"
+    blocks:
+      - type: split
+        ratio: 0.58
+        left:
+          - type: table
+            columns: ["Decisión (USD evitados)", "Al año", "Inversión"]
+            widths: [2.9, 1.1, 1.1]
+            align: "lrr"
+            total: true
+            rows:
+              - ["Endpoints en vez de Network Firewall y NAT", "10.856,40", "0,00"]
+              - ["CloudFront y Lambda en vez de ALB", "490,56", "0,00"]
+              - ["Modelo solo al abrir una alerta", "632,68", "0,00"]
+              - ["Hardware dual; satélite solo sin señal", "34.560,00", "50.000,00"]
+              - ["Drones contratados, sin flota propia", "0,00", "180.000,00"]
+              - ["DynamoDB bajo demanda", "993,24", "0,00"]
+              - ["Total", "47.532,88", "230.000,00"]
+        right:
+          - type: cards
+            cols: 1
+            compact: true
+            items:
+              - {icon: scale, title: "Método", text: "Tarifas de us-east-1 y catálogos de noviembre de 2026, a 4.100 COP por USD; cada supuesto con ID y separado del cálculo"}
+              - {icon: alert-triangle, title: "Por revalidar", text: "Precios de AWS en PD-200 y cotizaciones de equipos y vuelos en PD-230"}
+              - {icon: check-circle, title: "Infracost en cada PR", text: "CLI v2 compara base y head de cada stack y módulo y publica antes, después y delta junto al plan (pc-iac-027)"}
+    source: "Costos del piloto, secciones 1, 2 y 9 · ASM-251 · pc-iac-027 · infracost.yml en infrastructure y terraform-modules"
+    presenter: "JR2"
+    time: "0:50"
+    notes: |
+      El método: tarifas publicadas de us-east-1 y catálogos de noviembre de 2026, a 4.100 pesos por dólar, con cada supuesto numerado y separado del cálculo, y a revalidar en PD-200 y PD-230.
+      Seis decisiones bajan el costo: endpoints en vez de Network Firewall y NAT, CloudFront en vez de un balanceador, el modelo solo al abrir una alerta, hardware dual con satélite solo donde falta señal, drones contratados y DynamoDB bajo demanda. Suman 47.532 dólares al año y 230.000 de inversión evitada.
+      Y cada cambio se costea antes de fusionar: Infracost compara la base y el head de cada stack y publica antes, después y delta junto al plan, sin credenciales de nube. Las cifras de Infracost viven en el resumen de cada ejecución; no las citamos como medición.
+
+  # Slide 23
+  - kind: content
+    part: 4
+    number: 23
     eyebrow: "Parte 4 · IaC, cambio, costo y cierre · JR2"
     title: "Un sistema de diseño para las tres apps, legible a pleno sol"
     blocks:
@@ -556,16 +778,14 @@ slides:
           - {type: images, assets: [ds-alerts, ds-lookup]}
     source: "aroma-pacifico-design-system: tokens/contrast-report.md, docs/design-system.md, previews/"
     presenter: "JR2"
-    time: "0:30"
+    time: "0:20"
     notes: |
-      El sistema de diseño cubre las tres aplicaciones del piloto: la app del caficultor que funciona sin conexión, la app de custodia del transportador y la consulta pública del saco.
-      La marca es nueva: un grano de café sobre olas del Pacífico, con versiones a una tinta y en negativo, como esta presentación. Para el sol del campo, las reglas de uso exterior exigen contraste 7 a 1, nivel AAA, en los 48 pares de color, con cero fallas, áreas táctiles de 48 y 56 píxeles y fondos claros.
-      La consulta pública minimiza los datos: cuatro grupos, origen, fechas de proceso, estado y variables de secado, sin datos personales ni coordenadas de la finca.
+      El sistema de diseño cubre las tres apps con marca propia, contraste 7 a 1 en los 48 pares de color, sin fallas, y áreas táctiles de 48 y 56 píxeles para el sol del campo. La consulta pública muestra cuatro grupos de datos y ningún dato personal.
 
-  # Slide 18
+  # Slide 24
   - kind: content
     part: 4
-    number: 18
+    number: 24
     eyebrow: "Parte 4 · IaC, cambio, costo y cierre · JR2"
     title: "Sustentamos tres cosas, y lo que sigue abierto tiene dueño"
     blocks:

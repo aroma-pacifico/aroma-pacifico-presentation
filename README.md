@@ -16,13 +16,13 @@ This repository holds the slide decks, demonstration walkthroughs, speaker notes
 
 | Path | Purpose |
 |---|---|
-| `deck/aroma-pacifico-sustentacion.pptx` | The defense slides in Spanish: 25 slides (cover, team slide, four part dividers, the 18 content slides and a questions slide), 16:9, with Spanish speaker notes and target times |
+| `deck/aroma-pacifico-sustentacion.pptx` | The defense slides in Spanish: 31 slides (cover, team slide, four part dividers, the 24 content slides and a questions slide), 16:9, with Spanish speaker notes and target times |
 | `deck/aroma-pacifico-sustentacion.pdf` | PDF export of the same deck, with Roboto embedded; the safe copy to project |
 | `deck/content.yaml` | Slide text, speaker notes and the catalog of diagram crops; edit this to change the deck |
 | `deck/build_deck.py` | Generator: reads the design tokens and `content.yaml` and writes the PPTX, the PDF and the previews |
 | `deck/assets/` | Rendered inputs: a copy of the design tokens, brand marks, icons, diagram crops, design-system previews and the team portraits (`team/`) |
 | `deck/previews/slide-NN.png` | One PNG per slide, rendered from the PDF, for visual review |
-| `docs/final-presentation.md` | 20-minute slide deck: 18 slides in four parts by role (SR1, SR2, JR1, JR2), with sources and the register of pending content |
+| `docs/final-presentation.md` | 20-minute slide deck: 24 slides in four parts by role (SR1, SR2, JR1, JR2), with sources and the register of pending content |
 | `docs/speaker-script.md` | Spoken script per slide, with timings and the rehearsal log |
 | `docs/defense-qa.md` | Short answers to the likely questions of the defense session |
 | `docs/case/case-statement.pdf` | Sole source of requirements |
