@@ -11,3 +11,23 @@ This repository holds the slide decks, demonstration walkthroughs, speaker notes
 ## Tasks delivered here
 
 - [A25](https://github.com/aroma-pacifico/aroma-pacifico-roadmap/issues/38)
+
+## Contents
+
+| Path | Purpose |
+|---|---|
+| `docs/final-presentation.md` | 20-minute slide deck: 18 slides in four parts by role (SR1, SR2, JR1, JR2), with sources and the register of pending content |
+| `docs/speaker-script.md` | Spoken script per slide, with timings and the rehearsal log |
+| `docs/defense-qa.md` | Short answers to the likely questions of the defense session |
+| `docs/case/case-statement.pdf` | Sole source of requirements |
+
+```text
+aroma-pacifico-presentation/
+|-- README.md
+`-- docs/
+    |-- case/
+    |   `-- case-statement.pdf
+    |-- defense-qa.md
+    |-- final-presentation.md
+    `-- speaker-script.md
+```
