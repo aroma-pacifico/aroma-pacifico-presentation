@@ -16,11 +16,11 @@ This repository holds the slide decks, demonstration walkthroughs, speaker notes
 
 | Path | Purpose |
 |---|---|
-| `deck/aroma-pacifico-sustentacion.pptx` | The defense slides in Spanish: 24 slides (cover, four part dividers, the 18 content slides and a questions slide), 16:9, with Spanish speaker notes and target times |
+| `deck/aroma-pacifico-sustentacion.pptx` | The defense slides in Spanish: 25 slides (cover, team slide, four part dividers, the 18 content slides and a questions slide), 16:9, with Spanish speaker notes and target times |
 | `deck/aroma-pacifico-sustentacion.pdf` | PDF export of the same deck, with Roboto embedded; the safe copy to project |
 | `deck/content.yaml` | Slide text, speaker notes and the catalog of diagram crops; edit this to change the deck |
 | `deck/build_deck.py` | Generator: reads the design tokens and `content.yaml` and writes the PPTX, the PDF and the previews |
-| `deck/assets/` | Rendered inputs: a copy of the design tokens, brand marks, icons, diagram crops and design-system previews |
+| `deck/assets/` | Rendered inputs: a copy of the design tokens, brand marks, icons, diagram crops, design-system previews and the team portraits (`team/`) |
 | `deck/previews/slide-NN.png` | One PNG per slide, rendered from the PDF, for visual review |
 | `docs/final-presentation.md` | 20-minute slide deck: 18 slides in four parts by role (SR1, SR2, JR1, JR2), with sources and the register of pending content |
 | `docs/speaker-script.md` | Spoken script per slide, with timings and the rehearsal log |
@@ -37,6 +37,7 @@ aroma-pacifico-presentation/
 |   |   |-- brand/
 |   |   |-- icons/
 |   |   |-- images/
+|   |   |-- team/
 |   |   `-- tokens.json
 |   |-- build_deck.py
 |   |-- content.yaml
@@ -51,7 +52,7 @@ aroma-pacifico-presentation/
 
 ## The slide file
 
-The deck is the Spanish rendering of `docs/final-presentation.md`, built on the Aroma Pacífico design system (`aroma-pacifico-design-system`): colors, font family, sizes, spacing and radius come from `tokens/tokens.json`, the marks from `brand/` and the icons from `icons/`. Text and background pairs are taken from `tokens/contrast-report.md`. Diagrams are crops of the merged SVG exports of `aroma-pacifico-diagrams`, so they stay legible when projected. Each part opens with a divider that names the presenter by role and the part time. The cover holds the placeholders `[Nombre SR1]` to `[Nombre JR2]`; the team writes the names there and nowhere else.
+The deck is the Spanish rendering of `docs/final-presentation.md`, built on the Aroma Pacífico design system (`aroma-pacifico-design-system`): colors, font family, sizes, spacing and radius come from `tokens/tokens.json`, the marks from `brand/` and the icons from `icons/`. Text and background pairs are taken from `tokens/contrast-report.md`. Diagrams are crops of the merged SVG exports of `aroma-pacifico-diagrams`, so they stay legible when projected. The cover and the team slide that follows it show the four presenters with their names, deck roles and job roles, and each part opens with a divider that names the presenter, their role and the part time. Names, roles and presentation order live once, under `meta.team` in `deck/content.yaml`.
 
 **Opening it.** Open the PPTX in PowerPoint, Keynote, Google Slides or LibreOffice Impress; the speaker notes carry the script of each slide with its target time. To project without font risk, use the PDF.
 
@@ -72,6 +73,12 @@ If the design tokens, the brand, the icons or a diagram change, refresh the rend
 python3 deck/build_deck.py --refresh-assets \
   --design-system ../aroma-pacifico-design-system \
   --diagrams ../aroma-pacifico-diagrams --render
+```
+
+The team portraits are cropped once from the original photos, which are not kept in the repository. `--team-photos` reads them from a folder and writes 3:4 crops of at most 900 pixels in height to `deck/assets/team/`. Each crop places the eyes and sizes the face from the eye midpoint and the eye-to-chin distance recorded per photo under `assets.team` in `content.yaml`; where a crop leaves a photo at the top, the wall color fills the gap and the build prints a warning naming the photo:
+
+```bash
+python3 deck/build_deck.py --team-photos <folder-with-the-photos> --render
 ```
 
 The build prints a warning and exits with status 1 when a text box may overflow. `--font Arial` builds a copy with the fallback font to check the deck without Roboto. After every build, look at the previews before committing.
