@@ -8,7 +8,7 @@
 | Companion files | [Speaker script](speaker-script.md), [Defense questions and short answers](defense-qa.md) |
 | Source of requirements | `docs/case/case-statement.pdf` |
 
-This deck is the slide content only. Each slide lists its on-screen text, its source in the architecture repository and its time. The slide design (layout, colors, typography) follows the design system of A24 once it merges; until then the slides are plain text blocks. Every figure on a slide is either a figure of the case statement, arithmetic on those figures, or a design target recorded in the decision log. None is a measurement. Content that depends on a task that has not merged is marked `PENDING` and names its source issue; the register at the end of this file lists them all.
+This deck is the slide content only. Each slide lists its on-screen text, its source in the architecture repository and its time. The slide specifications incorporate the visual design system of A24 (brand assets, typography, outdoor contrast rules, and palette) and the pilot cost model of A23. Every figure on a slide is either a figure of the case statement, arithmetic on those figures, or a design target recorded in the decision log. None is a measurement. Content that depends on a task that has not merged is marked `PENDING` and names its source issue (specifically B13 final validation); the register at the end of this file lists open dependencies.
 
 ## Time plan
 
@@ -60,8 +60,8 @@ Full-slide image: the complete diagram, `aroma-pacifico-diagrams/complete/archit
 |---|---|---|
 | Governance | Service control policies, tag policy, budgets and organization trail applied from the root; five transversal tags carry the cost split | [Landing zone](https://github.com/aroma-pacifico/aroma-pacifico-architecture/blob/main/docs/landing-zone.md) |
 | Identities | Separate identities and least privilege for six roles; MFA for collection-center operator, drone operator, platform operator and the agronomist | [Security and identity](https://github.com/aroma-pacifico/aroma-pacifico-architecture/blob/main/docs/security-and-identity.md) |
-| Data | TLS in transit, customer-managed keys at rest, 5-year retention, buyer sees origin, process dates, status and drying variables only | Same |
-| Revocation | A lost drone or a decommissioned node is revoked and stops publishing | Same, section 10 |
+| Security module | Merged `modules/security` (box D06, B06): eight rotated customer-managed keys (CMKs), staff Cognito pool with TOTP MFA, field pool passwordless, seven role groups | `aroma-pacifico-terraform-modules` PR #12 |
+| Data & Revocation | TLS in transit, CMKs at rest, 5-year retention; immediate revocation IAM role for lost drones or decommissioned nodes | [Security and identity, section 10](https://github.com/aroma-pacifico/aroma-pacifico-architecture/blob/main/docs/security-and-identity.md#10-revocation-flow-for-a-compromised-farm-node-or-drone); PR #12 |
 
 ## Part 2: Connectivity (SR2, 5:00)
 
@@ -135,9 +135,9 @@ Source: [drone service](https://github.com/aroma-pacifico/aroma-pacifico-archite
 | On the slide | Source |
 |---|---|
 | Four functions, one per trigger: telemetry batch, focus confirmation, verification, harvest estimate | [Inference functions](https://github.com/aroma-pacifico/aroma-pacifico-architecture/blob/main/docs/inference-functions.md) |
-| A function reads a persisted object, calls managed inference in `us-east-1`, writes the result with timestamp, confidence and source object | Same |
-| No model is trained; no persistent compute waits for objects; a failed invocation leaves the source object and the case state unchanged | Case statement, Part E |
-| Data that leaves Colombia: stored and processed in `us-east-1`; only screened crop images and alert-opening readings reach the model | Architecture, section 1 |
+| Codified inference pattern: merged `modules/inference-functions` (box D10, B10) with SQS queue, dead-letter queue, least-privilege IAM role, and Lambda invoking Amazon Nova Pro via Bedrock | `aroma-pacifico-terraform-modules` PR #14 |
+| Standardized result contract: functions persist timestamp (`result_at`), confidence, and source object (`source`); zero persistent compute (no EC2, ECS, or provisioned concurrency) | Same; case statement, Part E |
+| Data leaving Colombia: stored and processed in `us-east-1`; only screened crop images and alert-opening readings reach the model | Architecture, section 1 |
 
 ### Slide 12: Observability and the two SLOs (1:15)
 
@@ -158,11 +158,11 @@ Image: `architecture-iac.png`, the diagram with boxes D01 to D13.
 |---|---|
 | Terraform, one tool whose 26 binding rules already exist | The landing zone (designed, not coded) |
 | One pattern environment planned (`qa`), one stack per domain | The 200 farms and the three centers |
-| One pattern module: telemetry ingestion; one farm module; one function pattern (threshold) | The other three inference functions, the sack lookup module, application code |
-| Remote state: one encrypted, versioned, natively locked S3 bucket per environment | Cognito pools and CodeDeploy deployments |
-| Secrets out of the repository and out of the state | Observability, release notes, costs, design system and this defense (they are separate deliverables outside the 100 hours) |
+| Reusable IaC modules: telemetry ingestion (`modules/telemetry-ingestion`), farm monitoring (`modules/farm-monitoring`), base security (`modules/security`, B06/PR #12), and inference function pattern (`modules/inference-functions`, B10/PR #14) | The other three inference functions, the sack lookup module, application code |
+| Remote state: one encrypted, versioned, natively locked S3 bucket per environment | CodeDeploy deployments and manual cluster infrastructure |
+| Environment isolation and secrets (B03/PR #6): `environments/{dev,qa,pdn}/*.tfvars.example`, external injection via GitHub OIDC and `TF_VAR_*`, no plaintext secrets in repository or state (ADR-003) | Observability, release notes, costs, design system and this defense (separate deliverables outside the 100 hours) |
 
-Sources: [ADR-003](https://github.com/aroma-pacifico/aroma-pacifico-architecture/blob/main/docs/adr/adr-003-iac-tool-remote-state-and-pattern-module.md) and [100-hour plan, section 2](https://github.com/aroma-pacifico/aroma-pacifico-architecture/blob/main/docs/iac-plan-100h.md#2-scope-what-counts-in-the-100-hours).
+Sources: [ADR-003](https://github.com/aroma-pacifico/aroma-pacifico-architecture/blob/main/docs/adr/adr-003-iac-tool-remote-state-and-pattern-module.md), [100-hour plan, section 2](https://github.com/aroma-pacifico/aroma-pacifico-architecture/blob/main/docs/iac-plan-100h.md#2-scope-what-counts-in-the-100-hours), `aroma-pacifico-infrastructure` PR #6, and `aroma-pacifico-terraform-modules` PRs #12 and #14.
 
 ### Slide 14: The 100-hour plan in numbers (1:15)
 
@@ -187,36 +187,40 @@ Sources: [ADR-003](https://github.com/aroma-pacifico/aroma-pacifico-architecture
 
 ### Slide 16: Cost (0:45)
 
-| On the slide | Status |
-|---|---|
-| Cost of a normal month, a harvest month, one farm's hardware and the drone campaign | PENDING: source aroma-pacifico/aroma-pacifico-roadmap#36 (A23, cost document) |
-| Function invocations in harvest and the cost per thousand | PENDING: same source |
-| Decisions that lower or avoid cost (no NAT gateway, CloudFront in front of the lookup, contracted drone service, one Region, on-demand database) | Available now: [architecture, section 15](https://github.com/aroma-pacifico/aroma-pacifico-architecture/blob/main/docs/architecture.md#15-decisions-that-lower-or-avoid-cost); amounts PENDING |
-
-Do not write a price on this slide before the cost document merges.
+| Cost Domain | On the slide (exact figures from cost document) | Architectural Source |
+|---|---|---|
+| Normal Month OPEX | $2,728.62 USD total pilot spend: farm connectivity $920.00, center links $645.00, drone campaign average $583.33, AWS cloud workloads $580.29 (within $650.00 budget ceiling) | [Pilot costs, sections 1 and 7](https://github.com/aroma-pacifico/aroma-pacifico-architecture/blob/main/docs/pilot-costs.md#1-executive-summary-and-scope); ASM-230, ASM-250 |
+| Harvest Month OPEX | $10,666.92 USD total pilot spend: farm connectivity $920.00, center links $645.00, drone harvest campaign $8,500.00, AWS cloud workloads $601.92 (within $700.00 budget ceiling) | Same, sections 1, 5, 7 |
+| One Farm's Hardware CAPEX | $370.00 USD per farm: Crop node $175.00, Drying node $180.00, mounting kit $15.00. Total 200 farms CAPEX: $74,000.00 USD. Monthly recurring connectivity: $920.00 USD across 400 nodes | Same, section 3; ASM-231 |
+| Commercial Drone Campaign | $8,500.00 USD per harvest campaign; 7 annual campaigns (4 harvest, 3 off-harvest, 1,105 total flights) = $45,250.00 USD annual operator contract | Same, section 5; ADR-002, ASM-238 |
+| Harvest Invocations | 108,270 invocations, 420 model calls, $5.21 USD compute and model spend ($0.00477/1k telemetry evals, $5.164/1k confirmations/verifications, $21.65/1k estimations) | Same, section 6; ASM-169, ASM-237 |
+| Key Savings Decisions | 1. VPC endpoints vs Network Firewall and NAT saves $10,856.40/yr net OPEX (ASM-127)<br>2. CloudFront serverless front door vs ALB saves $490.56/yr net OPEX (ASM-155)<br>3. Episode-only Bedrock inference vs all readings saves $632.68/yr net OPEX (ASM-167)<br>*(Total 6 decisions avoid $47,532.88/yr OPEX and $230,000.00 CAPEX)* | Same, section 9; ASM-251, [Architecture, section 15](https://github.com/aroma-pacifico/aroma-pacifico-architecture/blob/main/docs/architecture.md#15-decisions-that-lower-or-avoid-cost) |
 
 ### Slide 17: Design system (0:30)
 
-| On the slide | Status |
-|---|---|
-| Logo, palette with sack states and crop alert, typography, spacing, base components, usage rules | PENDING: source aroma-pacifico/aroma-pacifico-roadmap#37 (A24, design system) |
-| The system applied to the farmer app, the transporter app and the sack lookup | PENDING: same source |
+| Design Element | Specification & Implementation | Source & Standards |
+|---|---|---|
+| Brand Assets | Pure SVG vector marks: logo, isotype (coffee bean over Pacific waves), single-ink (`#1A1714`), and negative white versions; 25% clear space, 48 px / 24 px minimum reproduction limits | `aroma-pacifico-design-system` [`brand/`](https://github.com/aroma-pacifico/aroma-pacifico-design-system/tree/main/brand); case statement point 7 |
+| Semantic Palettes | 4 Sack status badges: En preparación (`#FBF1DC`/`#5C3D00`), En viaje (`#E3EEFB`/`#0B3A6E`), Aceptado (`#E2F3E6`/`#0F4D22`), Rechazado (`#FBE4E2`/`#7A1610`)<br>5 Crop alert severities: Critical (`#FBE4E2`/`#7A1610`), Caution (`#FBF1DC`/`#5C3D00`), Notice (`#E3EEFB`/`#0B3A6E`), Resolved (`#E2F3E6`/`#0F4D22`), No-Data (`#ECE6DE`/`#1A1714`) | Same, [`tokens/tokens.json`](https://github.com/aroma-pacifico/aroma-pacifico-design-system/blob/main/tokens/tokens.json); PD-154, ASM-096 |
+| Outdoor Usability Rules | OUTDOOR-1 to OUTDOOR-8: minimum 7.0:1 (WCAG Level AAA) relative luminance contrast (48 checked token pairs, 0 failures), 48x48/56x56 px touch targets, high-reflectance light backgrounds (`#FFFFFF`, `#F6F2EC`), redundant icon+text encoding, and `[data-contrast="outdoor"]` 21:1 mode | Same, [`components/`](https://github.com/aroma-pacifico/aroma-pacifico-design-system/tree/main/components), [`tokens/contrast-report.md`](https://github.com/aroma-pacifico/aroma-pacifico-design-system/blob/main/tokens/contrast-report.md) |
+| Typography & Base UI | Roboto / Noto Sans system stack; 8-unit spatial system; 15 outline SVG icons (24x24 px, 2 px stroke); buttons, fields, alerts, sack cards, badges | Same, [`components/components.css`](https://github.com/aroma-pacifico/aroma-pacifico-design-system/blob/main/components/components.css) |
+| Applied Across Three Apps | Master design sheet applied to Coffee Grower offline-first PWA, Transporter logistics tracking, and Public Sack Lookup with 4 data groups (origin, dates, status, drying stats) and zero personal data | Same, [`docs/design-system.md`](https://github.com/aroma-pacifico/aroma-pacifico-design-system/blob/main/docs/design-system.md), [`examples/design-sheet.html`](https://github.com/aroma-pacifico/aroma-pacifico-design-system/blob/main/examples/design-sheet.html); ASM-096 |
 
 ### Slide 18: Close and what stays open (0:30)
 
 | On the slide | Source |
 |---|---|
 | Three things sustained: connectivity, flight mode, IaC in 100 hours | Slides 5 to 9 and 13 to 14 |
-| Open decisions owned by the Federation (clarification session answers, thresholds, drone operator contract) | [Architecture, section 17](https://github.com/aroma-pacifico/aroma-pacifico-architecture/blob/main/docs/architecture.md#17-open-decisions-for-the-defense) |
+| Open decisions owned by the Federation (clarification session answers, thresholds, drone operator contract RFP validation) | [Architecture, section 17](https://github.com/aroma-pacifico/aroma-pacifico-architecture/blob/main/docs/architecture.md#17-open-decisions-for-the-defense) |
 | Nothing was applied or deployed; every latency, recovery time and capacity is a design target | Architecture, section 2 |
 | Questions | [Defense questions](defense-qa.md) |
 
 ## Pending content register
 
-| Slide | Missing content | Source issue | Update when it merges |
+| Slide | Missing content | Source issue | Status / Action when it merges |
 |---|---|---|---|
-| 14 | Result and evidence of the final validation of the executable plan | aroma-pacifico/aroma-pacifico-roadmap#33 (B13) | Replace the pending row with the evidence and the module tag it used |
-| 16 | Every amount: normal month, harvest month, farm hardware, drone campaign, invocation cost | aroma-pacifico/aroma-pacifico-roadmap#36 (A23) | Copy the totals and their assumption IDs; recheck the script and answer 6 of the defense questions |
-| 17 | The design system and its application to the three apps | aroma-pacifico/aroma-pacifico-roadmap#37 (A24) | Add a screenshot of the applied sheet; apply the palette and typography to the whole deck |
-| 3, 10, 13 | Final diagram exports, if the diagrams repository changes them | aroma-pacifico-diagrams `complete/` | Re-export the images used on the slides |
-| 18 | Answers of the clarification session | PD-005 in the decision log | Update open decisions and any answer that changes |
+| 14 | Result and evidence of the final validation of the executable plan | aroma-pacifico/aroma-pacifico-roadmap#33 (B13) | PENDING: teammates' work; keep placeholder until B13 merges |
+| 16 | Every amount: normal month, harvest month, farm hardware, drone campaign, invocation cost | aroma-pacifico/aroma-pacifico-roadmap#36 (A23) | RESOLVED: incorporated from merged `docs/pilot-costs.md` (PR #44) |
+| 17 | The design system and its application to the three apps | aroma-pacifico/aroma-pacifico-roadmap#37 (A24) | RESOLVED: incorporated from merged design system repository (PR #4) |
+| 3, 10, 13 | Final diagram exports, if the diagrams repository changes them | aroma-pacifico-diagrams `complete/` | Monitoring; diagrams stable |
+| 18 | Answers of the clarification session | PD-005 in the decision log | Open decisions for the defense; owned by the Federation |
