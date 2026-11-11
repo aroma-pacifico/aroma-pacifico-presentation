@@ -6,6 +6,7 @@
 | Roadmap issue | aroma-pacifico/aroma-pacifico-roadmap#38 (A25) |
 | Length | 20 minutes, 18 slides, four presenters by role |
 | Companion files | [Speaker script](speaker-script.md), [Defense questions and short answers](defense-qa.md) |
+| Slide file | [`deck/aroma-pacifico-sustentacion.pptx`](../deck/aroma-pacifico-sustentacion.pptx) (Spanish, with speaker notes) and its [PDF export](../deck/aroma-pacifico-sustentacion.pdf); see the [README](../README.md#the-slide-file) |
 | Source of requirements | `docs/case/case-statement.pdf` |
 
 This deck is the slide content only. Each slide lists its on-screen text, its source in the architecture repository and its time. The slide specifications incorporate the visual design system of A24 (brand assets, typography, outdoor contrast rules, and palette) and the pilot cost model of A23. Every figure on a slide is either a figure of the case statement, arithmetic on those figures, or a design target recorded in the decision log. None is a measurement. Content that depends on a task that has not merged is marked `PENDING` and names its source issue (specifically B13 final validation); the register at the end of this file lists open dependencies.
@@ -174,6 +175,7 @@ Sources: [ADR-003](https://github.com/aroma-pacifico/aroma-pacifico-architecture
 | Capacity | 4 people at 5 hours a day for 10 working days is 200 hours; 49 percent booked | Plan, section 6.1 |
 | Finish | Working hour 38 of 50, Day 8 of 10 | Plan, section 9 |
 | Top risks | Plan evidence needs a human-provisioned account (PD-019); feature behavior not yet re-checked live (PD-200) | Plan, section 8 |
+| Pipeline evidence (B11, B12) | CI with formatting, validation, tflint, Trivy, tests, a plan against the Floci emulator and Infracost; CD with production approval | `aroma-pacifico-infrastructure` PRs #9, #10, #11 and #14 (merged) |
 | Result of the final validation (B13) | PENDING: source aroma-pacifico/aroma-pacifico-roadmap#33 | not merged |
 
 ### Slide 15: Controlled change and release notes (1:00)
@@ -189,8 +191,8 @@ Sources: [ADR-003](https://github.com/aroma-pacifico/aroma-pacifico-architecture
 
 | Cost Domain | On the slide (exact figures from cost document) | Architectural Source |
 |---|---|---|
-| Normal Month OPEX | $2,728.62 USD total pilot spend: farm connectivity $920.00, center links $645.00, drone campaign average $583.33, AWS cloud workloads $580.29 (within $650.00 budget ceiling) | [Pilot costs, sections 1 and 7](https://github.com/aroma-pacifico/aroma-pacifico-architecture/blob/main/docs/pilot-costs.md#1-executive-summary-and-scope); ASM-230, ASM-250 |
-| Harvest Month OPEX | $10,666.92 USD total pilot spend: farm connectivity $920.00, center links $645.00, drone harvest campaign $8,500.00, AWS cloud workloads $601.92 (within $700.00 budget ceiling) | Same, sections 1, 5, 7 |
+| Normal Month OPEX | $2,707.27 USD total pilot spend: farm connectivity $920.00, center links $645.00, drone campaign average $583.33, AWS cloud workloads $558.94 (within $650.00 budget ceiling) | [Pilot costs, sections 1 and 7](https://github.com/aroma-pacifico/aroma-pacifico-architecture/blob/main/docs/pilot-costs.md#1-executive-summary-and-scope); ASM-230, ASM-250 |
+| Harvest Month OPEX | $10,638.75 USD total pilot spend: farm connectivity $920.00, center links $645.00, drone harvest campaign $8,500.00, AWS cloud workloads $573.75 (within $700.00 budget ceiling) | Same, sections 1, 5, 7 |
 | One Farm's Hardware CAPEX | $370.00 USD per farm: Crop node $175.00, Drying node $180.00, mounting kit $15.00. Total 200 farms CAPEX: $74,000.00 USD. Monthly recurring connectivity: $920.00 USD across 400 nodes | Same, section 3; ASM-231 |
 | Commercial Drone Campaign | $8,500.00 USD per harvest campaign; 7 annual campaigns (4 harvest, 3 off-harvest, 1,105 total flights) = $45,250.00 USD annual operator contract | Same, section 5; ADR-002, ASM-238 |
 | Harvest Invocations | 108,270 invocations, 420 model calls, $5.21 USD compute and model spend ($0.00477/1k telemetry evals, $5.164/1k confirmations/verifications, $21.65/1k estimations) | Same, section 6; ASM-169, ASM-237 |
@@ -219,8 +221,12 @@ Sources: [ADR-003](https://github.com/aroma-pacifico/aroma-pacifico-architecture
 
 | Slide | Missing content | Source issue | Status / Action when it merges |
 |---|---|---|---|
-| 14 | Result and evidence of the final validation of the executable plan | aroma-pacifico/aroma-pacifico-roadmap#33 (B13) | PENDING: teammates' work; keep placeholder until B13 merges |
-| 16 | Every amount: normal month, harvest month, farm hardware, drone campaign, invocation cost | aroma-pacifico/aroma-pacifico-roadmap#36 (A23) | RESOLVED: incorporated from merged `docs/pilot-costs.md` (PR #44) |
+| 14 | Result and evidence of the final validation of the executable plan | aroma-pacifico/aroma-pacifico-roadmap#33 (B13) | PENDING: issue open on 2026-11-11; the deck shows it as pending and states no result |
+| 14 | CI pipeline with an executable plan | aroma-pacifico/aroma-pacifico-roadmap#31 (B11) | RESOLVED: gates, Floci plan job and Infracost estimate merged in `aroma-pacifico-infrastructure` PRs #9, #10 and #11; follow-up PR #12 still open |
+| 14 | CD pipeline with production approval | aroma-pacifico/aroma-pacifico-roadmap#32 (B12) | RESOLVED: merged in `aroma-pacifico-infrastructure` PR #14; runbook PR #15 still open |
+| 13, 14 | Association between the environment and a collection center | aroma-pacifico/aroma-pacifico-roadmap#25 (B05) | PARTIAL: module merged in `aroma-pacifico-terraform-modules` PR #21; stack wiring in `aroma-pacifico-infrastructure` PR #4 still open, shown as "En revisión" |
+| 11 | Event-driven drone capability orchestrator (ADR-004) | `aroma-pacifico-architecture` PR #50, `aroma-pacifico-diagrams` PR #23 | OPEN: both pull requests in review; the deck says "ADR-004, en revisión" |
+| 16 | Every amount: normal month, harvest month, farm hardware, drone campaign, invocation cost | aroma-pacifico/aroma-pacifico-roadmap#36 (A23) | RESOLVED: incorporated from merged `docs/pilot-costs.md` (PRs #44 and #46, reconciled totals) |
 | 17 | The design system and its application to the three apps | aroma-pacifico/aroma-pacifico-roadmap#37 (A24) | RESOLVED: incorporated from merged design system repository (PR #4) |
-| 3, 10, 13 | Final diagram exports, if the diagrams repository changes them | aroma-pacifico-diagrams `complete/` | Monitoring; diagrams stable |
+| 3, 5 to 8, 10, 11, 13, 15 | Final diagram exports, if the diagrams repository changes them | aroma-pacifico-diagrams | RESOLVED for this deck: crops rendered from the merged SVG exports; rerun `deck/build_deck.py --refresh-assets` if they change |
 | 18 | Answers of the clarification session | PD-005 in the decision log | Open decisions for the defense; owned by the Federation |
