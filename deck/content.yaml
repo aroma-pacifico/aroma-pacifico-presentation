@@ -6,8 +6,22 @@
 # aroma-pacifico-infrastructure, aroma-pacifico-terraform-modules or
 # aroma-pacifico-design-system; the `source` of each slide names it and is
 # written into the speaker notes, not onto the slide.
-# Who presents a slide (`presenter`) and its target time (`time`) appear only
-# in the speaker notes and in docs/guion-sustentacion.md.
+# Who presents a slide (`presenter`) appears only in the speaker notes and in
+# docs/guion-sustentacion.md. The target time of a slide is derived from its
+# notes at 130 words per minute, so it follows the text.
+
+# Frame of docs/guion-sustentacion.md. The slide-by-slide text is the
+# `notes` of each slide, so the script and the PPTX notes always match.
+script:
+  status: "Guion de ensayo. El tiempo de cada diapositiva es su texto leído a 130 palabras por minuto; el ensayo completo lo confirma."
+  issue: "aroma-pacifico/aroma-pacifico-roadmap#38 (A25)"
+  target: "20 a 25 minutos"
+  intro: |
+    El guion está escrito para decirse en voz alta, en frases cortas, a unas 130 palabras por minuto. Cada presentador adapta la redacción; las cifras y las referencias son la parte fija. Toda cifra es del enunciado del caso, aritmética sobre una de ellas o una meta de diseño: se dice «meta de diseño» y nunca «medido». La fuente de cada diapositiva queda al final de su texto y en las notas del orador, no en la diapositiva.
+
+    En la portada, Esteban lee el título y pasa a la diapositiva del equipo, donde cada presentador dice su nombre y su rol en el orden de la exposición. Las diapositivas de diagrama completo duran poco: el presentador señala tres zonas y sigue; el detalle queda en el anexo para las preguntas.
+  annex: |
+    Después del cierre y el código QR viene el anexo, que no se expone. Tiene cada diagrama publicado en vista completa, sin recortes, y sus vistas de detalle donde el texto del diagrama quedaría por debajo de unos 10 px a 1920 de ancho. Ante una pregunta, quien responde salta a la diapositiva de la tabla y vuelve al cierre al terminar. Las preguntas probables y sus respuestas están en [defense-qa.md](defense-qa.md).
 
 meta:
   title: "Aroma Pacífico: propuesta técnica del piloto 2026"
@@ -225,7 +239,6 @@ slides:
     subtitle: "Piloto 2026 en Cauca, Huila y Tolima, sobre AWS"
     date: "Noviembre de 2026"
     presenter: "SR1"
-    time: "0:15"
     notes: |
       Buenos días. Somos el equipo que propone diseñar, codificar y entregar la actualización 2026 del piloto de trazabilidad de café de Aroma Pacífico.
 
@@ -233,7 +246,6 @@ slides:
     institution: "Universidad Icesi"
     title: "El equipo"
     presenter: "SR1"
-    time: "0:20"
     notes: |
       Cada integrante dice su nombre, su rol y la parte que presenta: Esteban Gaviria Zambrano, Senior DevOps, el caso, la arquitectura y el gobierno, y al final los costos; Karen Valeria Jurado Calpa, Junior DevOps, red, conectividad y seguridad; Jeanpaul Atkinson Vidales Gallego, Senior DevOps, las cargas: finca, drones, inferencia, saco y observabilidad; César Augusto Jiménez Reina, Junior DevOps, la infraestructura como código y el plan de 100 horas.
 
@@ -256,7 +268,6 @@ slides:
           - ["Precios, equipos y nube de 2020", "Costos a precios de ahora y una nube elegida y justificada"]
     source: "Enunciado del caso, «Contexto», «Qué se actualiza» y «Cifras del piloto»"
     presenter: "SR1"
-    time: "0:45"
     notes: |
       El piloto de 2020 rastreaba el café desde la finca hasta el comprador, pero nunca se desplegó, y su supuesto central ya no se cumple: suponía señal en la mayoría de las fincas.
       En 2026 son 200 fincas en tres departamentos, tres centros de acopio, 60 transportadores y la entrega en Buenaventura. Nuestra propuesta parte de un principio: cada flujo funciona aunque no haya señal.
@@ -278,7 +289,6 @@ slides:
           - {value: "USD 2.707", label: "al mes en operación normal; USD 10.639 en cosecha"}
     source: "Observabilidad, ASM-224 y ASM-225 · Enunciado del caso · Plan de 100 horas · Costos del piloto, sección 1"
     presenter: "SR1"
-    time: "0:50"
     notes: |
       Estas son las metas con las que nos comprometemos. Dos SLO: el 95 por ciento de las alertas llega al caficultor en 300 segundos y el 99,5 por ciento de las consultas del saco responde sin error, ambos en 28 días móviles.
       Del caso vienen la alerta en menos de 5 minutos, el búfer de 24 horas, la retención de 5 años, el RPO de 15 minutos y el RTO de 4 horas. La IaC ocupa 98 de las 100 horas y el piloto cuesta 2.707 dólares en un mes normal y 10.639 en cosecha. Todas son metas de diseño, con su indicador definido.
@@ -301,7 +311,6 @@ slides:
           - {icon: calendar, title: "IaC acotada", text: "Módulos, variables, estado y plan de un ambiente en 100 horas"}
     source: "Enunciado del caso, «Restricciones», «Automatización y cambio» y «Épica 6»"
     presenter: "SR1"
-    time: "0:40"
     notes: |
       El cliente fija reglas que no negociamos: una sola visita a la finca, poca inversión del caficultor, una app de pocas pantallas y un dron gobernado. En lo técnico: un nodo autónomo en energía, un patrón que escala a 1.000 fincas sin redireccionar, ningún cambio productivo en el día de una semana de cosecha y una IaC acotada a 100 horas. Cada decisión que sigue responde a una de estas reglas.
 
@@ -323,7 +332,6 @@ slides:
           - {icon: alert-triangle, title: "Se reemplaza", text: "Señal en la finca por búfer de 24 h y portador satelital; centro sin red por LAN de siete zonas"}
     source: "Arquitectura, sección 13 · legacy-2020.md · legacy/legacy-2020.svg"
     presenter: "SR1"
-    time: "0:35"
     notes: |
       No copiamos la arquitectura de 2020, como pide el caso. De 18 elementos, conservamos 8 requisitos que siguen vigentes, reemplazamos 4 supuestos de conectividad que ya no se cumplen y retiramos 6 elementos, como los precios y el manual de 2020. El diagrama siguiente muestra la trazabilidad de cada uno.
 
@@ -332,7 +340,6 @@ slides:
     title: "Cada elemento de 2020 tiene un destino trazable en el diseño 2026"
     subtitle: "Se conserva, se reemplaza o se retira, con la caja de IaC que lo implementa"
     presenter: "SR1"
-    time: "0:20"
     source: "aroma-pacifico-diagrams, legacy/legacy-2020.svg"
     notes: |
       A la izquierda lo que traía 2020, a la derecha su destino en 2026 y la caja de IaC que lo implementa. El detalle completo está en el anexo.
@@ -358,7 +365,6 @@ slides:
         text: "A 1.000 fincas la ingesta sube a 18.000 lecturas al día, unas 0,21 por segundo: el mismo punto de ingesta y el mismo direccionamiento."
     source: "Monitoreo de finca, sección 3 · Saco y viaje, sección 8 · Plan de direccionamiento, sección 6 · Costos del piloto, sección 6.4"
     presenter: "SR1"
-    time: "0:40"
     notes: |
       Dimensionamos con las cifras del caso. Al día entran 1.200 lecturas de cultivo y, en cosecha, 2.400 de secado; 7.200 posiciones de transportadores y hasta 1.200 sacos. La consulta del saco tiene picos de 30 por minuto, y en un mes de cosecha hay 108.270 invocaciones de funciones y solo 420 llamadas al modelo.
       A cinco años son 13 millones de posiciones y 2,19 millones de sacos. Y a 1.000 fincas la ingesta sube a 18.000 lecturas diarias, 0,21 por segundo: el patrón no cambia.
@@ -380,7 +386,6 @@ slides:
         text: "Azure preparada: interfaces neutrales, datos en formato abierto y un destino de exportación declarado, sin desplegar."
     source: "ADR-001, contexto, decisión y alternativas"
     presenter: "SR1"
-    time: "0:50"
     notes: |
       La nube principal es AWS, en una sola región, us-east-1. Los criterios: que funciones, almacenamiento e inferencia administrada vivan en la misma región, para decir a qué país y a qué región salen los objetos; que las 28 reglas IaC del equipo ya estén escritas para AWS; y no duplicar la plataforma.
       sa-east-1 no permite nombrar la región de la inferencia de visión, y Azure o GCP como principal exigiría reescribir las reglas dentro de las 100 horas. Azure queda preparada con tres propiedades: interfaces neutrales, datos en formato abierto y un destino de exportación declarado, sin desplegar nada.
@@ -398,7 +403,6 @@ slides:
           - {icon: shield-check, title: "Datos protegidos", text: "TLS en tránsito, llaves KMS propias por almacén y retención de 5 años"}
     source: "Arquitectura, secciones 1, 4, 5 y 7 · complete/architecture.svg"
     presenter: "SR1"
-    time: "0:40"
     notes: |
       La arquitectura objetivo cabe en cuatro ideas. Una organización con cinco cuentas y un /16 por ambiente. Un borde autónomo que guarda y libera al confirmar. Cómputo solo por eventos, sin servidores esperando. Y datos cifrados con llaves propias por almacén, guardados cinco años. Veamos el diagrama completo.
 
@@ -407,7 +411,6 @@ slides:
     title: "La arquitectura completa: borde, organización AWS y cajas D01 a D13"
     subtitle: "Fincas, centros, dron y transporte llegan por identidad a la cuenta de producción en us-east-1"
     presenter: "SR1"
-    time: "0:40"
     source: "aroma-pacifico-diagrams, complete/architecture.svg"
     notes: |
       Arriba, el borde: fincas, centros de acopio, la operación contratada de drones y el transporte con la consulta pública. Abajo, la organización AWS, con la IaC a la izquierda y la cuenta de producción a la derecha. Las insignias D01 a D13 marcan lo que construye el código. Al pie, los dos flujos de negocio: la custodia del saco y de la plaga a la fumigación.
@@ -418,7 +421,6 @@ slides:
     title: "En el borde, cada actor guarda localmente y publica al recuperar la señal"
     subtitle: "Detalle del borde: fincas y centros de acopio; el anexo tiene drones, transporte y puerto"
     presenter: "SR1"
-    time: "0:20"
     source: "aroma-pacifico-diagrams, complete/architecture.svg (detalle)"
     notes: |
       En el detalle del borde se ve la regla común: el nodo de finca, la estación de tierra y el teléfono del transportador guardan cifrado y liberan solo al confirmar la recepción.
@@ -429,7 +431,6 @@ slides:
     title: "En producción, la VPC no tiene salida a internet y todo corre por eventos"
     subtitle: "Detalle: niveles privados, endpoints, funciones Lambda, colas y almacenes"
     presenter: "SR1"
-    time: "0:20"
     source: "aroma-pacifico-diagrams, complete/architecture.svg (detalle)"
     notes: |
       En la cuenta de producción, los niveles son privados y llegan a AWS por endpoints. Las funciones se disparan por eventos y escriben en DynamoDB y S3 cifrados con llaves propias.
@@ -454,7 +455,6 @@ slides:
           - {icon: eye, title: "Auditoría", text: "Lectura de un saco, cambio de umbral, telemetría y entrega de un objeto de vuelo"}
     source: "Zona de aterrizaje, secciones 3 a 7 · accounts/landing-zone.svg"
     presenter: "SR1"
-    time: "0:45"
     notes: |
       El gobierno se aplica desde la raíz: siete políticas de control de servicios, entre ellas solo us-east-1, sin credenciales de larga duración y cambios de producción solo por el pipeline. La política de etiquetas fija ocho claves y cinco reparten el costo por fincas, drones, acopio, viajes y ambientes.
       Los presupuestos son de 650 dólares en mes normal y 700 en cosecha, con alertas al 80 y al 100 por ciento, y el trail de la organización guarda cinco años los cuatro eventos que el caso pide auditar.
@@ -464,7 +464,6 @@ slides:
     title: "La zona de aterrizaje separa cuentas y aplica controles desde la raíz"
     subtitle: "Organización, SCP, identidades, presupuestos y canal de auditoría de 5 años"
     presenter: "SR1"
-    time: "0:20"
     source: "aroma-pacifico-diagrams, accounts/landing-zone.svg"
     notes: |
       Arriba la raíz y las cuentas; en el medio las cuatro puertas de identidad, el camino de presupuestos y el canal de auditoría; abajo la tabla de etiquetas. Con esto Karen continúa con la red.
@@ -497,7 +496,6 @@ slides:
               - {icon: location, title: "Un solo resumen", text: "La nube ve a los centros por la ruta 10.40.0.0/13"}
     source: "Plan de direccionamiento, secciones 2 a 6 · network/addressing-plan.svg"
     presenter: "JR1"
-    time: "0:45"
     notes: |
       La regla de la red es identidad, no dirección. Fincas, teléfonos y drones no tienen dirección en la nube; se autentican con un certificado o un token. Por eso crecer de 200 a 1.000 fincas suma identidades, no subredes.
       Cada ambiente tiene su /16: 10.80 desarrollo, 10.81 pruebas y 10.82 producción, sin tocar el 10.40 barra 13 de los centros. Hay reservas para AWS y un bloque para Azure, que no se despliega.
@@ -507,7 +505,6 @@ slides:
     title: "Cada ambiente tiene su VPC y los mismos siete roles de subred"
     subtitle: "Superredes, niveles por zona de disponibilidad y patrón de los centros"
     presenter: "JR1"
-    time: "0:20"
     source: "aroma-pacifico-diagrams, network/addressing-plan.svg"
     notes: |
       La VPC repite los mismos niveles en tres zonas de disponibilidad, con /22 por zona y reserva para crecer. A la derecha, el patrón de los tres centros.
@@ -517,7 +514,6 @@ slides:
     title: "Siete flujos de conectividad, cada uno con protocolo, búfer y conducta sin señal"
     subtitle: "Finca, finca sin cobertura, beneficiadero, dron, transportador, centro de acopio y puerto"
     presenter: "JR1"
-    time: "0:35"
     source: "aroma-pacifico-diagrams, network/connectivity.svg · Conectividad, secciones 2 a 11"
     notes: |
       Este es el diseño de conectividad, en el cuerpo de la propuesta y no en un anexo. La finca publica MQTT sobre TLS con certificado X.509; la finca sin cobertura usa el mismo nodo con portador satelital; el dron baja sus objetos por el centro o por la cabecera municipal; el transportador publica cada 5 minutos con bandeja cifrada; y el puerto solo registra la entrega.
@@ -539,7 +535,6 @@ slides:
         text: "La nube deduplica por nodo, hora de lectura y evento: un reintento nunca duplica una alerta, y la alerta tardía se marca como tal."
     source: "Conectividad, secciones 4.3, 6, 7 y 8 · ASM-073 a ASM-079 · network/no-signal-sequence.svg"
     presenter: "JR1"
-    time: "0:40"
     notes: |
       Sin señal no se pierde nada. El nodo guarda hasta 24 horas cifradas; al volver publica primero una lectura en vivo y luego vacía el búfer. La finca sin cobertura usa el mismo nodo por satélite. La app del transportador guarda 7 días y nunca descarta un evento de custodia. Y la misión del dron viaja precargada.
       En la nube, cada lectura se deduplica por nodo y hora, así que un reintento no duplica alertas.
@@ -549,7 +544,6 @@ slides:
     title: "La alerta cabe en 300 segundos: 210 de presupuesto y 90 de margen"
     subtitle: "Izquierda: búfer, reconexión y drenado. Derecha: latencia por salto, del sensor al teléfono"
     presenter: "JR1"
-    time: "0:30"
     source: "aroma-pacifico-diagrams, network/no-signal-sequence.svg"
     notes: |
       A la izquierda, la pérdida de señal, el búfer y la reconexión con drenado ordenado. A la derecha, el presupuesto de latencia en siete saltos: 210 segundos de meta y 90 de margen dentro de los 300 del caso.
@@ -573,7 +567,6 @@ slides:
           - {icon: shield-check, title: "Control de tráfico", text: "Las zonas no operativas tienen tope de ancho de banda"}
     source: "Red del centro de acopio, secciones 2 a 6 · Conectividad, sección 10 · network/collection-center.svg"
     presenter: "JR1"
-    time: "0:40"
     notes: |
       En los centros de acopio, un solo patrón sirve a los tres departamentos con dos parámetros: la clave del centro y el segundo octeto. Siete zonas con su SSID; la de visitantes no llega a logística ni a gerencia.
       La WAN es de 100 megabits con dos túneles IPsec y respaldo celular; el pico pide 68 y planeamos 90. En Buenaventura no instalamos nada: la naviera conserva su telemetría y nosotros registramos la entrega desde la app del transportador.
@@ -583,7 +576,6 @@ slides:
     title: "El centro de acopio: zonas segmentadas detrás de un firewall perimetral"
     subtitle: "Flujos permitidos en verde y denegados en rojo, cada uno con su ID de regla"
     presenter: "JR1"
-    time: "0:20"
     source: "aroma-pacifico-diagrams, network/collection-center.svg"
     notes: |
       Cada flecha verde es una regla permitida con su ID y puerto, y cada roja una denegación. Este patrón se repite tres veces sin redibujar.
@@ -601,7 +593,6 @@ slides:
           - {icon: scale, title: "Ahorro neto", text: "USD 10.856,40 al año frente a Network Firewall y NAT (ASM-127)"}
     source: "Política de firewall, secciones 3 a 6 · Costos del piloto, sección 9 · security/firewall-policy.svg"
     presenter: "JR1"
-    time: "0:35"
     notes: |
       Hay un firewall perimetral en cada centro y uno de nube, con tablas de origen, destino, puerto, acción y vigencia. No compramos NAT gateway ni appliance: llegamos a AWS por endpoints privados, la capa de datos no tiene ruta a internet y eso ahorra 10.856 dólares netos al año.
 
@@ -610,7 +601,6 @@ slides:
     title: "Las reglas del centro y de la nube, nivel por nivel"
     subtitle: "Firewall del centro, hub de tránsito y grupos de seguridad de cada nivel de la VPC"
     presenter: "JR1"
-    time: "0:20"
     source: "aroma-pacifico-diagrams, security/firewall-policy.svg"
     notes: |
       A la izquierda el firewall del centro, en el medio el hub de tránsito y a la derecha cada nivel de la VPC con sus reglas.
@@ -632,7 +622,6 @@ slides:
         text: "El comprador ve origen, fechas de proceso, estado y variables de secado; nunca la cédula ni la traza completa."
     source: "Seguridad e identidad, secciones 2 a 10 · ASM-098 · security/identity-and-access.svg · security/revocation-sequence.svg"
     presenter: "JR1"
-    time: "0:45"
     notes: |
       Cada rol del caso tiene su identidad con mínimo privilegio, y el MFA es obligatorio para el operario de acopio, el operador de drones, el de plataforma y el agrónomo, que además se reautentica para autorizar una fumigación.
       Ocho llaves KMS con rotación cifran cada clase de datos. Un nodo o un dron perdido pierde su certificado y su conexión; la meta es completar la baja en 4 horas desde el reporte. El comprador solo ve cuatro grupos de datos.
@@ -642,7 +631,6 @@ slides:
     title: "Cada actor entra por su puerta, con su directorio y su llave"
     subtitle: "Actores, directorios, puertas de entrada, roles y almacenes cifrados con KMS"
     presenter: "JR1"
-    time: "0:20"
     source: "aroma-pacifico-diagrams, security/identity-and-access.svg"
     notes: |
       De izquierda a derecha: el tipo de identidad, su directorio, la puerta de entrada, el rol que procesa y el almacén con su llave.
@@ -652,7 +640,6 @@ slides:
     title: "MFA escalonado para autorizar y revocación con tiempos definidos"
     subtitle: "Ingreso del personal, consulta anónima del comprador y baja de nodos, drones y personas"
     presenter: "JR1"
-    time: "0:25"
     source: "aroma-pacifico-diagrams, security/revocation-sequence.svg"
     notes: |
       Arriba, el ingreso con MFA y la reautenticación para autorizar, y la consulta anónima del comprador. Abajo, la revocación de un nodo o dron y la salida de una persona. Jeanpaul sigue con las cargas.
@@ -677,7 +664,6 @@ slides:
           - {icon: eye, title: "Historial", text: "Lecturas en DynamoDB por 5 años para el caficultor y el reporte del piloto"}
     source: "Monitoreo de finca, secciones 3 a 7 · Conectividad, sección 8 · flows/farm-monitoring-sequence.svg"
     presenter: "SR2"
-    time: "0:45"
     notes: |
       El monitoreo de finca recorre siete saltos, cada uno con su meta: suman 210 segundos y dejan 90 de margen dentro de los 300 del caso. La función evalúa contra los umbrales que publica la Federación, que son datos y no código.
       Abrimos una alerta por episodio, no por lectura, y la entregamos por SMS y push. El historial queda cinco años.
@@ -687,7 +673,6 @@ slides:
     title: "Monitoreo de finca: cada salto tiene meta y cada lectura deja rastro"
     subtitle: "Nodo, IoT Core, cola de umbrales, función, episodio, despachador y teléfono"
     presenter: "SR2"
-    time: "0:20"
     source: "aroma-pacifico-diagrams, flows/farm-monitoring-sequence.svg"
     notes: |
       La secuencia muestra los siete saltos con su meta, la deduplicación del episodio y la entrega por dos canales.
@@ -707,7 +692,6 @@ slides:
         text: "Vuela un operador certificado contratado. Un agrónomo de la Federación autoriza cada fumigación como identidad humana con MFA; ningún disparador la ejecuta."
     source: "ADR-002, modo de vuelo y gobierno del dron · Servicio de drones, secciones 3 a 6"
     presenter: "SR2"
-    time: "0:45"
     notes: |
       El caso pide cinco servicios y ninguno reemplaza a otro. El modo área delimita el lote y estima la cosecha; el modo precisión confirma la alerta, fumiga el foco y verifica el mismo lote. Solo el combinado cubre los cinco.
       El cambio de modo son dos eventos persistidos y solo un foco confirmado lleva a una orden. Vuela un operador certificado contratado y autoriza un agrónomo con MFA: es el ADR-002.
@@ -717,7 +701,6 @@ slides:
     title: "De la alerta a la fumigación cerrada, en cinco fases persistidas"
     subtitle: "Detección, vuelo de confirmación, orden con autorización humana, misión y verificación"
     presenter: "SR2"
-    time: "0:25"
     source: "aroma-pacifico-diagrams, flows/drone-fumigation-sequence.svg"
     notes: |
       La secuencia completa tiene cinco fases. Ningún paso cambia de estado sin persistir su evidencia.
@@ -728,7 +711,6 @@ slides:
     title: "La orden de fumigación solo sale con autorización humana y MFA"
     subtitle: "Detalle de la fase 3: el agrónomo revisa, autoriza con MFA y la orden queda registrada"
     presenter: "SR2"
-    time: "0:20"
     source: "aroma-pacifico-diagrams, flows/drone-fumigation-sequence.svg (detalle)"
     notes: |
       En el detalle, la fase de autorización: el caso confirmado crea un borrador, el agrónomo lo revisa y lo autoriza con MFA, y la plataforma guarda quién autorizó, la ventana y el operador.
@@ -738,7 +720,6 @@ slides:
     title: "Tres máquinas de estado impiden fumigar sin evidencia"
     subtitle: "Caso de plaga, orden de fumigación y misión del dron, con guardas y actores"
     presenter: "SR2"
-    time: "0:25"
     source: "aroma-pacifico-diagrams, flows/drone-state-machines.svg"
     notes: |
       El caso, la orden y la misión son máquinas de estado. La orden no sale sin polígono ni registro de vuelo cerrado, y la fumigación sigue abierta hasta persistir la verificación.
@@ -761,7 +742,6 @@ slides:
         text: "Si una invocación falla, el objeto de origen permanece y el estado del caso no cambia; el error se ve en la cola de fallidos y en su alarma."
     source: "ADR-004 · Funciones de inferencia, secciones 3, 4 y 6"
     presenter: "SR2"
-    time: "0:40"
     notes: |
       Un orquestador dirigido por eventos coordina las capacidades del dron sin acoplarlas: el objeto persistido dispara un pipe de EventBridge, una regla por tipo de misión lo envía a su cola y cada cola tiene su cola de fallidos. Es el ADR-004.
       Si una invocación falla, el objeto se queda y el caso no cambia; el error se observa en la cola de fallidos.
@@ -793,7 +773,6 @@ slides:
         text: "Cero EC2 y cero concurrencia aprovisionada; una foto que contiene una persona nunca se envía al modelo."
     source: "Funciones de inferencia, secciones 2 a 10 · Costos del piloto, sección 6 · flows/inference-functions.svg"
     presenter: "SR2"
-    time: "0:40"
     notes: |
       La inferencia es por eventos: cuatro funciones, una por disparador. Cada una lee el objeto ya persistido, llama a Amazon Nova Pro en us-east-1 y escribe en el expediente con hora, confianza y origen.
       En un mes de cosecha son 108.270 invocaciones, pero solo 420 llegan al modelo, porque solo se llama al abrir una alerta: 5,21 dólares. Una foto con una persona no se envía.
@@ -803,7 +782,6 @@ slides:
     title: "Disparadores, colas, funciones y almacenes de la inferencia"
     subtitle: "Cada resultado guarda marca de tiempo, confianza e identificador del objeto de origen"
     presenter: "SR2"
-    time: "0:20"
     source: "aroma-pacifico-diagrams, flows/inference-functions.svg"
     notes: |
       De izquierda a derecha: disparadores, colas con su cola de fallidos, las cuatro funciones, la inferencia y los almacenes, y la observación de errores.
@@ -828,7 +806,6 @@ slides:
           - {icon: eye, title: "Vista del comprador", text: "Origen, fechas de proceso, estado y variables de secado"}
     source: "Saco y viaje, secciones 2 a 8 · flows/sack-and-trip-sequence.svg · flows/sack-states.svg"
     presenter: "SR2"
-    time: "0:40"
     notes: |
       El saco pasa por siete estados, de en preparación a entregado en puerto, aceptado o rechazado. Cada evento guarda fecha, hora y responsable en un registro de solo agregar, con RPO de 15 minutos.
       El código es aleatorio y no revela la cédula. La consulta pública lee una vista separada, con RTO de 4 horas, y el comprador ve solo origen, fechas, estado y secado.
@@ -838,7 +815,6 @@ slides:
     title: "Del código impreso a la consulta del comprador, en seis fases"
     subtitle: "Hoja de códigos, registro en el beneficiadero, custodia, acopio, puerto y consulta pública"
     presenter: "SR2"
-    time: "0:20"
     source: "aroma-pacifico-diagrams, flows/sack-and-trip-sequence.svg"
     notes: |
       La secuencia sigue al saco desde la hoja de códigos hasta la consulta pública, con la bandeja cifrada del transportador en ruta.
@@ -848,7 +824,6 @@ slides:
     title: "Los siete estados del saco y quién responde por cada transición"
     subtitle: "Finca, viaje al acopio, acopio aceptado o rechazado, viaje al puerto y entrega"
     presenter: "SR2"
-    time: "0:15"
     source: "aroma-pacifico-diagrams, flows/sack-states.svg"
     notes: |
       Cada transición tiene responsable y evento; el acopio y el puerto pueden aceptar o rechazar.
@@ -867,7 +842,6 @@ slides:
           - ["Eventos del saco y órdenes", "HTTPS desde las apps", "API Gateway y funciones de negocio", "DynamoDB transaccional"]
     source: "Conectividad, secciones 4, 6 y 7 · data-paths/data-paths.md · Automatización y pipelines, secciones 6 y 7"
     presenter: "SR2"
-    time: "0:35"
     notes: |
       Los tres caminos de datos que pide el caso son distintos a propósito. La telemetría entra por MQTT a IoT Core y termina en DynamoDB. La posición entra por HTTPS a la API. Los objetos del dron suben a S3 por la VPN del centro o con una URL firmada desde la cabecera municipal. Los eventos del saco y las órdenes van a la base transaccional.
 
@@ -876,7 +850,6 @@ slides:
     title: "Los pipelines de ingesta y de objetos de vuelo, de punta a punta"
     subtitle: "Telemetría hacia IoT Core y objetos de vuelo hacia S3 y la recepción"
     presenter: "SR2"
-    time: "0:15"
     source: "aroma-pacifico-diagrams, pipelines/ingestion-and-flight-objects.svg"
     notes: |
       Estos son los dos pipelines que pide el caso además del de plataforma: ingesta y recepción de objetos de vuelo.
@@ -898,7 +871,6 @@ slides:
           - {icon: eye, title: "Dos tableros", text: "Operativo y de costos, partidos por las etiquetas de fincas, drones, acopio y pruebas"}
     source: "Observabilidad, secciones 2 a 6 · docs/dashboards"
     presenter: "SR2"
-    time: "0:40"
     notes: |
       Observamos lo que el caso pide: ingesta, aplicaciones, bases, los tres enlaces WAN y la llegada de objetos de vuelo. Dos SLO con su SLI: la entrega de la alerta y la disponibilidad de la consulta del saco.
       Las cinco detecciones del caso tienen su alarma, y hay dos tableros, operativo y de costos, partidos por etiquetas. César sigue con la infraestructura como código.
@@ -917,7 +889,6 @@ slides:
           - {icon: x-circle, title: "Lo que deja fuera", text: "Zona de aterrizaje, 200 fincas, 3 centros, observabilidad, costos y esta presentación"}
     source: "ADR-003 · Plan de 100 horas, sección 2"
     presenter: "JR2"
-    time: "0:45"
     notes: |
       La infraestructura como código cabe en 100 horas porque construye lo que el caso cuenta: módulos, variables, estado remoto y un plan ejecutable de un ambiente patrón. Elegimos Terraform porque nuestras 28 reglas están escritas para él. El estado vive en un bucket cifrado y versionado por ambiente, con bloqueo nativo. Lo que queda fuera es deliberado y está escrito en el ADR-003.
 
@@ -926,7 +897,6 @@ slides:
     title: "Trece cajas, trece tareas: el código coincide con el diagrama"
     subtitle: "D01 a D10 son repositorio, estado, variables y módulos; D11 a D13 son CI, validación y CD"
     presenter: "JR2"
-    time: "0:20"
     source: "aroma-pacifico-diagrams, complete/architecture-iac.svg"
     notes: |
       Cada caja es una tarea del plan y una ruta del repositorio. D11, D13 y D12 forman la cadena del plan revisable.
@@ -953,7 +923,6 @@ slides:
         text: "Repositorio público: prefijo de nombre, sin proveedor ni backend, sin cuentas; 8 suites con 131 pruebas en modo plan."
     source: "aroma-pacifico-terraform-modules: etiquetas v0.1.0 a v0.5.0, README y tests de cada módulo · pc-iac-015"
     presenter: "JR2"
-    time: "0:45"
     notes: |
       Este es el catálogo del repositorio público de módulos: ocho módulos, cada uno con su caja y la etiqueta en que se publicó, de la v0.1.0 a la v0.5.0. Ninguno declara proveedor, backend ni cuentas, porque el repositorio es público, y tienen 131 pruebas en modo plan en 8 suites. Los stacks los consumen por etiqueta, así que subir de versión es un cambio revisado.
 
@@ -986,7 +955,6 @@ slides:
         text: "Plan de extremo a extremo de qa contra Floci: los cuatro stacks en orden, sin cambios ni destrucciones, y la historia y el plan escaneados sin secretos."
     source: "aroma-pacifico-infrastructure: stacks/, environments/, scripts/plan-all.sh, docs/b13-final-validation.md · ADR-003"
     presenter: "JR2"
-    time: "0:45"
     notes: |
       La infraestructura tiene cuatro stacks, uno por dominio, en orden de dependencia: estado, red, seguridad y cargas. Los tres ambientes, dev, qa y pdn, usan los mismos módulos y las mismas etiquetas; cambian solo su archivo de variables, su backend y su CIDR.
       El plan de extremo a extremo de qa corre contra el emulador Floci, los cuatro stacks en orden, y valida que no haya secretos en la historia ni en el plan.
@@ -1009,7 +977,6 @@ slides:
           - {title: "Costo y emulación (2)", text: "Infracost en cada pipeline y plan contra Floci sin credenciales"}
     source: "standards/iac-rules, pc-iac-001 a pc-iac-028 · AGENTS.md, sección 8"
     presenter: "JR2"
-    time: "0:35"
     notes: |
       Las 28 reglas pc-iac son vinculantes y la CI comprueba las que se pueden verificar. Cubren la estructura del módulo, variables y locals, proveedores y versiones, estado y dominios, seguridad, recursos, pruebas, y desde este mes el costo con Infracost y el plan contra Floci.
 
@@ -1032,7 +999,6 @@ slides:
         text: "13 chequeos por pull request de infraestructura y 29 en el repositorio de módulos, con 16 validaciones y 8 planes de ejemplo."
     source: "aroma-pacifico-infrastructure: infrastructure-ci.yml, floci-plan.yml, infracost.yml, pr-conventions.yml · pc-iac-027 · pc-iac-028"
     presenter: "JR2"
-    time: "0:45"
     notes: |
       Así entra un cambio. El pull request pasa el escaneo de secretos, las compuertas de cada stack, el plan contra Floci e Infracost, que publica el costo antes, después y la diferencia junto al plan. Son 13 chequeos por pull request de infraestructura y 29 en el de módulos. Al fusionar, un módulo nuevo se publica por etiqueta.
 
@@ -1041,7 +1007,6 @@ slides:
     title: "CI de la IaC: del pull request al plan revisado y la etiqueta"
     subtitle: "Desarrollador, compuertas, Floci, Infracost, revisión, merge y etiqueta del módulo"
     presenter: "JR2"
-    time: "0:20"
     source: "aroma-pacifico-diagrams, pipelines/iac-ci-sequence.svg"
     notes: |
       La secuencia muestra los mismos pasos con sus actores.
@@ -1064,7 +1029,6 @@ slides:
         text: "Quien solicita no aprueba: la aprobación queda registrada con la huella del plan, la nota de versión y la hora."
     source: "aroma-pacifico-infrastructure: cd-promotion.yml, cd-plan.yml, docs/cd-pipeline.md, secciones 2 a 5"
     presenter: "JR2"
-    time: "0:45"
     notes: |
       Subir la infraestructura sigue la promoción dev, qa y pdn. Cada merge planifica dev y qa con su costo. Para producción, una primera ejecución publica el plan, el delta de costo y la huella del plan; otra persona de la lista de aprobadores aprueba exactamente esa huella. El pipeline rechaza la ventana de cosecha salvo un incidente, y solo se aplica el plan aprobado. Todo queda registrado.
 
@@ -1073,7 +1037,6 @@ slides:
     title: "Subir la infraestructura, stack por stack y con aprobación"
     subtitle: "Merge, plan y costo por ambiente, aprobación con evidencia, ventana y aplicación"
     presenter: "JR2"
-    time: "0:20"
     source: "aroma-pacifico-diagrams, pipelines/iac-provisioning-sequence.svg"
     notes: |
       La secuencia muestra la promoción con sus actores y la aprobación con evidencia.
@@ -1091,7 +1054,6 @@ slides:
           - {icon: package, title: "Estado recuperable", text: "Bucket versionado por ambiente: se restaura la última versión buena y se verifica con un plan"}
     source: "aroma-pacifico-infrastructure, docs/cd-pipeline.md, secciones 3 y 7 · Automatización y pipelines, secciones 5 y 10"
     presenter: "JR2"
-    time: "0:40"
     notes: |
       Volver atrás es un revert por pull request y una nueva promoción: el plan revisado muestra el cambio inverso. Bajar un ambiente va en el orden inverso de los stacks, y el aprobador lee primero las destrucciones. Las tablas con datos tienen prevent_destroy, así que un plan que las reemplace falla, y el estado se recupera del bucket versionado.
 
@@ -1100,7 +1062,6 @@ slides:
     title: "Bajar la infraestructura y volver atrás, con la misma compuerta"
     subtitle: "Revert y re-promoción, baja en orden inverso y guardas de retención"
     presenter: "JR2"
-    time: "0:20"
     source: "aroma-pacifico-diagrams, pipelines/iac-teardown-and-rollback-sequence.svg"
     notes: |
       La secuencia muestra el revert, la baja controlada y las guardas de retención.
@@ -1133,7 +1094,6 @@ slides:
               - {icon: calendar, title: "Reserva", text: "98 horas reservadas y 2 de reserva, dentro del tope de 100"}
     source: "Plan de 100 horas, secciones 4.1 y 6.5"
     presenter: "JR2"
-    time: "0:45"
     notes: |
       El plan reparte 98 horas en 19 partes. SR1 lleva 27, SR2 26, JR1 22 y JR2 23. Seis tareas se dividen en módulo y cableado, ninguna pasa de 10 horas y nadie pasa de 25 por semana ni de 5 por día. Quedan 2 horas de reserva.
 
@@ -1158,7 +1118,6 @@ slides:
           - {value: "49 %", label: "de 200 horas de capacidad"}
     source: "Plan de 100 horas, secciones 6.2, 6.4 y 6.5"
     presenter: "JR2"
-    time: "0:45"
     notes: |
       La ruta crítica tiene dos cadenas de 38 horas que comparten B01, B06a, B03 y B04b; una sigue por B09b, B07b y B12, y la otra por B08 y B05, y ambas cierran en B13. El plan termina en la hora 38 de 50, el día 8, con 12 horas de colchón, y usa el 49 por ciento de la capacidad. Esteban cierra con los costos.
 
@@ -1182,7 +1141,6 @@ slides:
           - {icon: package, title: "Inferencia en cosecha", text: "108.270 invocaciones y 420 llamadas al modelo por USD 5,21"}
     source: "Costos del piloto, secciones 1, 3, 5, 6 y 7 · ASM-230, ASM-231, ASM-250"
     presenter: "SR1"
-    time: "0:45"
     notes: |
       El piloto cuesta 2.707 dólares en un mes normal y 10.639 en un mes de cosecha, con 82.550 de inversión inicial. La nube es la parte menor: 559 y 574 dólares, bajo los topes de 650 y 700. Cada finca cuesta 370 dólares de hardware una vez y 4,60 al mes, y la inferencia de un mes de cosecha, 5,21.
 
@@ -1223,7 +1181,6 @@ slides:
               - ["Total AWS", "558,94", "573,75"]
     source: "Costos del piloto, secciones 1, 3.2 y 7.1 · ASM-230 a ASM-237"
     presenter: "SR1"
-    time: "0:45"
     notes: |
       A la izquierda, el costo por dominio: lo que dispara la cosecha es la campaña de dron, que pasa de 583 a 8.500 dólares. A la derecha, la nube por servicio: pesa la red privada, con el resolver, el Transit Gateway y las VPN. La cosecha solo sube la nube 14,81 dólares, por los SMS y la inferencia.
 
@@ -1257,7 +1214,6 @@ slides:
               - {icon: eye, title: "Costo por etiqueta", text: "El tablero de costos parte el gasto por fincas, drones, acopio y ambientes"}
     source: "Costos del piloto, secciones 1, 2 y 9 · ASM-251 · pc-iac-027"
     presenter: "SR1"
-    time: "0:45"
     notes: |
       Seis decisiones bajan el costo: endpoints en vez de Network Firewall y NAT, CloudFront en vez de un balanceador, el modelo solo al abrir una alerta, hardware dual con satélite solo sin señal, drones contratados y DynamoDB bajo demanda. Suman 47.533 dólares al año y 230.000 de inversión evitada.
       Y el costo no se descuida después: Infracost publica el costo antes, después y la diferencia en cada pull request y en la aprobación de producción.
@@ -1278,7 +1234,6 @@ slides:
         text: "Ejemplos: la banda recomendada de la alerta de cultivo, para aplicación, y el retiro del camino de aceptación de qa, para infraestructura."
     source: "Automatización y pipelines, secciones 3 a 5 y 10 · Notas de versión · pipelines/platform-pipeline.svg"
     presenter: "SR1"
-    time: "0:35"
     notes: |
       El cambio es controlado: un mismo candidato pasa por dev, qa y pdn, y producción aplica solo lo revisado, nunca en el día de una semana de cosecha salvo un incidente. Las dos plantillas de notas de versión dicen qué cambia, la ventana, el impacto, la aprobación, el aviso a la Federación y cómo volver atrás, cada una con su ejemplo.
 
@@ -1287,7 +1242,6 @@ slides:
     title: "Un candidato, tres ambientes y salvaguardas en producción"
     subtitle: "Repositorios, candidato de versión, dev, qa y pdn, identidades del pipeline y ventana de cosecha"
     presenter: "SR1"
-    time: "0:20"
     source: "aroma-pacifico-diagrams, pipelines/platform-pipeline.svg"
     notes: |
       El pipeline de la plataforma: un candidato inmutable que se promueve con compuertas, despliegue canario de funciones y alarmas de vuelta atrás.
@@ -1309,7 +1263,6 @@ slides:
           - {type: images, assets: [ds-alerts, ds-lookup]}
     source: "aroma-pacifico-design-system: tokens/contrast-report.md, docs/design-system.md, previews/"
     presenter: "SR1"
-    time: "0:30"
     notes: |
       El sistema de diseño es propio, como pide el caso: marca, paleta con los estados del saco y la alerta, tipografía para teléfono y web, y componentes base. El contraste es de 7 a 1 en los 48 pares de color, las áreas táctiles son de 48 y 56 píxeles y la consulta pública no muestra datos personales. Esta misma presentación usa sus tokens.
 
@@ -1326,7 +1279,6 @@ slides:
           - {icon: scale, title: "Costo bajo control", text: "USD 2.707 al mes, seis decisiones de ahorro e Infracost en cada pull request"}
     source: "Síntesis de la propuesta"
     presenter: "SR1"
-    time: "0:40"
     notes: |
       Por qué esta propuesta: funciona sin señal, gobierna los drones con autorización humana, entrega código que coincide con el diagrama dentro de las 100 horas y mantiene el costo bajo control desde el diseño hasta cada pull request. Gracias.
 
@@ -1335,7 +1287,6 @@ slides:
     subtitle: "Arquitectura, diagramas, IaC, costos y sistema de diseño"
     url: "aroma-pacifico.github.io/aroma-pacifico-web"
     presenter: "SR1"
-    time: "0:15"
     notes: |
       Dejamos el sitio del proyecto en el código QR. Recibimos sus preguntas; el anexo tiene cada diagrama completo y sus detalles.
 

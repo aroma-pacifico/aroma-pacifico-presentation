@@ -679,8 +679,7 @@ class Renderer:
         if s.get("presenter"):
             who = " y ".join(self.member(c) for c in s["presenter"].split("+"))
             line = f"Presenta: {who}"
-            if s.get("time"):
-                line += f" · Tiempo objetivo: {s['time']}"
+            line += f" · Tiempo objetivo: {clock(spoken(s))}"
             head.append(line)
         if s.get("source"):
             head.append(f"Fuente: {s['source']}")
@@ -909,7 +908,95 @@ def build(content: dict, theme: Theme, out: Path):
         r.notes(slide, s)
     prs.save(out)
     legibility_report(content, r.placed)
+    write_script(content, slides, r)
     return len(slides)
+
+
+WORDS_PER_MINUTE = 130
+
+
+def spoken(s: dict) -> int:
+    """Target seconds of a slide: its speaker notes read aloud at
+    WORDS_PER_MINUTE, rounded to 5 seconds, never under 10."""
+    words = len(s.get("notes", "").split())
+    return max(10, round(words * 60 / WORDS_PER_MINUTE / 5) * 5)
+
+
+def clock(n: int) -> str:
+    return f"{n // 60}:{n % 60:02d}"
+
+
+def write_script(content: dict, slides: list, r) -> None:
+    """Write docs/guion-sustentacion.md from the same text as the speaker
+    notes, so the script and the PPTX never disagree."""
+    meta, script = content["meta"], content["script"]
+    talk = [s for s in slides if s.get("presenter")]
+    annex = [s for s in slides if s.get("chip")]
+    total = sum(spoken(s) for s in talk)
+    low, high = (int(v) for v in re.findall(r"\d+", script["target"])[:2])
+    if not low * 60 <= total <= high * 60:
+        WARNINGS.append(f"talk lasts {clock(total)}, outside the {script['target']} target")
+    blocks = []
+    for s in talk:
+        if blocks and blocks[-1]["who"] == s["presenter"]:
+            blocks[-1]["slides"].append(s)
+        else:
+            blocks.append({"who": s["presenter"], "slides": [s]})
+    first = {m["code"]: m["first"].split()[0] for m in meta["team"]}
+    full = {m["code"]: f"{m['first']} {m['last']}" for m in meta["team"]}
+
+    def span(b):
+        return f"{b['slides'][0]['_index']} a {b['slides'][-1]['_index']}"
+
+    out = ["# Guion de la sustentación", "",
+           "| Campo | Valor |", "|---|---|",
+           f"| Estado | {script['status']} |",
+           f"| Issue | {script['issue']} |",
+           f"| Presentación | `deck/{OUT_NAME}.pptx` y `.pdf`: {len(slides)} diapositivas, "
+           f"{talk[0]['_index']} a {talk[-1]['_index']} de exposición y "
+           f"{annex[0]['_index']} a {annex[-1]['_index']} de anexo |",
+           f"| Duración | {clock(total)} de exposición, dentro de la meta de "
+           f"{script['target']} |",
+           "| Fuente | Generado por `deck/build_deck.py` desde `deck/content.yaml`; "
+           "las notas del orador del PPTX tienen el mismo texto. No se edita a mano. |",
+           "", script["intro"].strip(), "",
+           "## Reparto y tiempos", "",
+           "| Bloque | Presenta | Diapositivas | Tiempo |", "|---|---|---|---|"]
+    for n, b in enumerate(blocks, start=1):
+        t = sum(spoken(s) for s in b["slides"])
+        out.append(f"| {n} | {full[b['who']]} ({b['who']}) | {span(b)} | {clock(t)} |")
+    per = {}
+    for s in talk:
+        per[s["presenter"]] = per.get(s["presenter"], 0) + spoken(s)
+    out += [f"| Total | {', '.join(f'{c} {clock(v)}' for c, v in per.items())} | "
+            f"{talk[0]['_index']} a {talk[-1]['_index']} | {clock(total)} |", ""]
+    out += ["## Guion por diapositiva", ""]
+    for n, b in enumerate(blocks, start=1):
+        t = sum(spoken(s) for s in b["slides"])
+        out += [f"### Bloque {n}: {full[b['who']]} ({b['who']}), diapositivas {span(b)}, "
+                f"{clock(t)}", ""]
+        for s in b["slides"]:
+            title = s.get("title", "")
+            out += [f"**Diapositiva {s['_index']} ({clock(spoken(s))}). {title}**", ""]
+            out += [s.get("notes", "").strip(), ""]
+            if s.get("source"):
+                out += [f"Fuente: {s['source']}.", ""]
+        if n < len(blocks):
+            nxt = blocks[n]
+            out += [f"*Transición: {first[b['who']]} cede la palabra a {first[nxt['who']]}, "
+                    f"que continúa en la diapositiva {nxt['slides'][0]['_index']}.*", ""]
+    out += ["## Anexo para preguntas", "", script["annex"].strip(), "",
+            "| Anexo | Diagrama | Fuente | Diapositivas |", "|---|---|---|---|"]
+    for s in annex:
+        if s.get("full_of"):
+            continue
+        views = [x["_index"] for x in annex if x is s or x.get("full_of") is s]
+        rng = f"{views[0]}" if len(views) == 1 else f"{views[0]} a {views[-1]}"
+        aid = s["chip"].split()[-1]
+        src = s["subtitle"].split(" · ")[1]
+        out.append(f"| {aid} | {s['title']} | `{src}` | {rng} |")
+    (DECK_DIR.parent / "docs" / "guion-sustentacion.md").write_text(
+        "\n".join(out).rstrip() + "\n", encoding="utf-8")
 
 
 # --------------------------------------------------------------------------
