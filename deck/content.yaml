@@ -7,6 +7,13 @@
 meta:
   title: "Aroma Pacífico: sustentación final"
   footer: "Aroma Pacífico · Sustentación 2026"
+  # Presentation order. The cover, the team slide, the part dividers and the
+  # speaker notes read names and roles from here.
+  team:
+    - {code: SR1, first: "Esteban", last: "Gaviria Zambrano", role: "Senior DevOps", photo: esteban}
+    - {code: SR2, first: "Jeanpaul Atkinson", last: "Vidales Gallego", role: "Senior DevOps", photo: jeanpaul}
+    - {code: JR1, first: "Karen Valeria", last: "Jurado Calpa", role: "Junior DevOps", photo: karen}
+    - {code: JR2, first: "César Augusto", last: "Jiménez Reina", role: "Junior DevOps", photo: cesar}
 
 # Rendered once with `build_deck.py --refresh-assets` from the sibling
 # repositories and committed under deck/assets/, so the deck can be rebuilt
@@ -24,6 +31,15 @@ assets:
     firewall: {src: security/firewall-policy.svg, crop: [0.618, 0.08, 1.0, 0.47]}
     inference: {src: flows/inference-functions.svg, crop: [0.0, 0.07, 0.385, 0.45]}
     pipeline: {src: pipelines/platform-pipeline.svg, crop: [0.17, 0.075, 1.0, 0.505]}
+  # Team portraits, cropped with `build_deck.py --team-photos <dir>` from the
+  # original photos (not kept in the repository). `eyes` is the midpoint of
+  # the eyes as fractions of the photo [x, y]; `eye_chin` is the eye-to-chin
+  # distance as a fraction of the photo height.
+  team:
+    esteban: {src: esteban.jpeg, eyes: [0.50, 0.40], eye_chin: 0.215}
+    jeanpaul: {src: jeanpaul.jpeg, eyes: [0.415, 0.23], eye_chin: 0.23}
+    karen: {src: karen.jpeg, eyes: [0.50, 0.343], eye_chin: 0.225}
+    cesar: {src: cesar.jpeg, eyes: [0.49, 0.43], eye_chin: 0.205}
   previews:
     ds-alerts: {src: previews/alert-card.png, crop: [0.0, 0.0, 1.0, 0.6]}
     ds-lookup: {src: previews/buyer-lookup-phone.png, crop: [0.0, 0.0, 1.0, 0.38]}
@@ -33,15 +49,18 @@ slides:
     eyebrow: "Sustentación final · Reto DevOps 2026"
     title: "Piloto de trazabilidad del café, actualización 2026"
     subtitle: "Cauca, Huila y Tolima · AWS como nube principal · Entrega solo de plan"
-    team:
-      - "SR1 · [Nombre SR1]"
-      - "SR2 · [Nombre SR2]"
-      - "JR1 · [Nombre JR1]"
-      - "JR2 · [Nombre JR2]"
     date: "Noviembre de 2026"
     notes: |
-      Portada. Sin tiempo propio: cuenta dentro de la diapositiva 1.
-      Mientras el jurado se acomoda, cada integrante dice su nombre y su rol (SR1, SR2, JR1, JR2). El equipo reemplaza los marcadores [Nombre ...] antes de la sustentación.
+      Portada. Sin tiempo propio: cuenta dentro de la diapositiva 1 del guion.
+      Mientras el jurado se acomoda, SR1 dice el título y pasa a la diapositiva del equipo.
+
+  - kind: team
+    institution: "Universidad Icesi"
+    occasion: "Sustentación técnica"
+    title: "El equipo"
+    notes: |
+      Equipo. Sin tiempo propio: cuenta dentro de la diapositiva 1 del guion.
+      Cada integrante dice su nombre y su rol, en el orden de la sustentación: Esteban Gaviria Zambrano, Senior DevOps (SR1, parte 1); Jeanpaul Atkinson Vidales Gallego, Senior DevOps (SR2, parte 2); Karen Valeria Jurado Calpa, Junior DevOps (JR1, parte 3); y César Augusto Jiménez Reina, Junior DevOps (JR2, parte 4).
 
   - kind: divider
     part: 1
