@@ -138,6 +138,7 @@ Source: [drone service](https://github.com/aroma-pacifico/aroma-pacifico-archite
 | Codified inference pattern: merged `modules/inference-functions` (box D10, B10) with SQS queue, dead-letter queue, least-privilege IAM role, and Lambda invoking Amazon Nova Pro via Bedrock | `aroma-pacifico-terraform-modules` PR #14 |
 | Standardized result contract: functions persist timestamp (`result_at`), confidence, and source object (`source`); zero persistent compute (no EC2, ECS, or provisioned concurrency) | Same; case statement, Part E |
 | Data leaving Colombia: stored and processed in `us-east-1`; only screened crop images and alert-opening readings reach the model | Architecture, section 1 |
+| Drone capability orchestrator (event-driven): the custom bus and its rules route each mission event to its capability, per-function queues buffer it with retries and a dead-letter queue, and the mission state machine in DynamoDB is the source of truth; no central workflow engine in the pilot | [ADR-004](https://github.com/aroma-pacifico/aroma-pacifico-architecture/blob/main/docs/adr/adr-004-drone-capability-orchestration.md) |
 
 ### Slide 12: Observability and the two SLOs (1:15)
 
