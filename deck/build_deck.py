@@ -3,18 +3,24 @@
 
 The deck is generated from two inputs:
 
-* deck/content.yaml: slide text, speaker notes and the asset catalog.
+* deck/content.yaml: slide text, speaker notes and the asset catalog,
+  including the catalog of every diagram of aroma-pacifico-diagrams with its
+  detail regions.
 * deck/assets/tokens.json: a copy of aroma-pacifico-design-system
   tokens/tokens.json (colors, font families, sizes, spacing and radius).
 
-Images (brand marks, icons, diagram crops and design-system previews) are
-rendered once from the sibling repositories with --refresh-assets and kept
-under deck/assets/, so a plain rebuild needs neither repository.
+Images (brand marks, icons, diagrams, design-system previews and the QR
+code) are rendered once from the sibling repositories with --refresh-assets
+and kept under deck/assets/, so a plain rebuild needs neither repository.
+Each diagram is rendered whole from its SVG with headless Chrome in tiles at
+3x, so no text is lost, then saved at twice the size of the slide box it
+fills: the full view, plus one zoomed image per detail region.
 
-Team portraits are cropped once from the original photos with
---team-photos DIR into deck/assets/team/, using the eye position and the
-eye-to-chin distance recorded per photo in content.yaml, so every face has
-the same size and eye height on the team slide.
+Team portraits are cropped with --team-photos DIR into deck/assets/team/.
+For each member the newest file in DIR whose name starts with the member's
+photo key is used; its eye position and eye-to-chin distance are recorded
+per file name in content.yaml, so every face has the same size and eye
+height on the team slide.
 
 Usage:
     python3 deck/build_deck.py                      # PPTX only
@@ -25,8 +31,9 @@ Usage:
     python3 deck/build_deck.py --team-photos <dir> --render
 
 Requirements: python-pptx, PyYAML and Pillow. --refresh-assets also needs
-Google Chrome or Chromium (headless SVG rendering). --render needs
-LibreOffice (soffice) and pdftoppm (poppler-utils).
+Google Chrome or Chromium (headless SVG rendering) and segno (QR code).
+--render needs LibreOffice (soffice) and pdftoppm (poppler-utils); it writes
+the PDF, one 1920-pixel PNG per slide and contact sheets of all slides.
 """
 
 from __future__ import annotations
@@ -44,7 +51,7 @@ from pathlib import Path
 import io
 
 import yaml
-from PIL import Image, ImageFilter, ImageFont, ImageOps
+from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageOps
 from pptx import Presentation
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE
@@ -64,7 +71,23 @@ PORTRAIT_FACE = 0.25  # eye-to-chin distance as a share of the portrait height
 PORTRAIT_EYES = 0.31  # eye line as a share of the portrait height, from the top
 PORTRAIT_MAX_H = 900  # pixels
 
+# Diagram slides: a slim title band, then a content box of at least 85 % of
+# the slide area that the diagram fills with a contain fit (never cropped,
+# never stretched).
+DIAGRAM_BAND = 56.0  # points of title band at the top
+DIAGRAM_EDGE = 12.0  # points of margin left, right and bottom
+DIAGRAM_BOX = (DIAGRAM_EDGE, DIAGRAM_BAND, SLIDE_W - 2 * DIAGRAM_EDGE,
+               SLIDE_H - DIAGRAM_BAND - DIAGRAM_EDGE)
+PREVIEW_PX = 1920  # width of the slide previews used for the visual gate
+PX_PER_PT = PREVIEW_PX / SLIDE_W
+# Diagram images are stored at twice the pixel size of the box at 1920 px.
+DIAGRAM_MAX_PX = (round(DIAGRAM_BOX[2] * PX_PER_PT * 2), round(DIAGRAM_BOX[3] * PX_PER_PT * 2))
+DIAGRAM_MASTER_SCALE = 3  # SVG units to pixels for the master render
+DIAGRAM_MASTER_PIXELS = 80e6  # cap for the largest diagrams (memory)
+LEGIBLE_PX = 10  # smallest comfortable body text at 1920 px
+
 WARNINGS: list[str] = []
+NOTES: list[str] = []  # informational, do not fail the build
 
 
 # --------------------------------------------------------------------------
@@ -387,23 +410,6 @@ class Renderer:
         self.blocks(slide, b["left"], x, y, lw, h, where + "/left")
         self.blocks(slide, b["right"], x + lw + self.t.gutter, y, rw, h, where + "/right")
 
-    def b_image(self, slide, b, x, y, w, h, where):
-        t = self.t
-        box(slide, x, y, w, h, fill=t.surface, line=t.border_subtle, radius=t.radius_md)
-        inset = 6
-        path = ASSETS / "images" / f"{b['asset']}.png"
-        px, py, pw, ph = picture(slide, path, x + inset, y + inset, w - 2 * inset,
-                                 h - 2 * inset)
-        for lab in b.get("labels", []):
-            size = 11
-            lw = MEASURE.width(lab["text"], size, True) + 2 * 8
-            lh = size * LINE_HEIGHT + 8
-            lx = min(max(px + lab["x"] * pw - lw / 2, px), px + pw - lw)
-            ly = py + lab["y"] * ph - lh / 2
-            box(slide, lx, ly, lw, lh, fill=t.surface_brand, radius=lh / 2)
-            text(slide, lx, ly, lw, lh, [lab["text"]], t, size, t.text_inverse, bold=True,
-                 align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
-
     def b_images(self, slide, b, x, y, w, h, where):
         t = self.t
         n = len(b["assets"])
@@ -414,28 +420,74 @@ class Renderer:
             picture(slide, ASSETS / "images" / f"{name}.png", cx + 8, y + 8, cw - 16, h - 16)
 
     def b_stats(self, slide, b, x, y, w, h, where):
+        """KPI cards: a large value and a label. `cols` wraps them into rows."""
         t = self.t
         items = b["items"]
-        n = len(items)
-        cw = (w - t.gap * (n - 1)) / n
+        cols = b.get("cols", len(items))
+        rows = -(-len(items) // cols)
+        cw = (w - t.gap * (cols - 1)) / cols
+        ch = (h - t.gap * (rows - 1)) / rows
         inner = cw - 2 * t.pad
-        compact = h < 120
+        compact = ch < 120
         top = 12 if compact else 16
         vmax = t.size_title if compact else t.size_value + 8
         vs = min(fit([it["value"]], inner, vmax * LINE_HEIGHT, vmax, 18, bold=True,
                      where=f"{where}/value") for it in items)
-        label_h = h - top - vs * LINE_HEIGHT - 4 - t.pad_small
+        label_h = ch - top - vs * LINE_HEIGHT - 4 - t.pad_small
         ls = min(fit([it["label"]], inner, label_h, t.size_body, 11,
                      where=f"{where}/label") for it in items)
         for i, it in enumerate(items):
-            cx = x + i * (cw + t.gap)
-            box(slide, cx, y, cw, h, fill=t.surface, line=t.border_subtle, radius=t.radius)
-            box(slide, cx + t.pad, y, 40, 4, fill=t.accent)
-            text(slide, cx + t.pad, y + top, inner, vs * LINE_HEIGHT, [it["value"]], t, vs,
+            cx = x + (i % cols) * (cw + t.gap)
+            cy = y + (i // cols) * (ch + t.gap)
+            box(slide, cx, cy, cw, ch, fill=t.surface, line=t.border_subtle, radius=t.radius)
+            box(slide, cx + t.pad, cy, 40, 4, fill=t.accent)
+            text(slide, cx + t.pad, cy + top, inner, vs * LINE_HEIGHT, [it["value"]], t, vs,
                  t.text_brand, bold=True)
-            ly = y + top + vs * LINE_HEIGHT + 4
-            text(slide, cx + t.pad, ly, inner, y + h - ly - 4, [it["label"]], t, ls,
+            ly = cy + top + vs * LINE_HEIGHT + 4
+            text(slide, cx + t.pad, ly, inner, cy + ch - ly - 4, [it["label"]], t, ls,
                  t.text_secondary)
+
+    def b_steps(self, slide, b, x, y, w, h, where):
+        """A left-to-right sequence of numbered steps joined by arrows."""
+        t = self.t
+        items = b["items"]
+        n = len(items)
+        arrow = 18
+        cw = (w - arrow * (n - 1)) / n
+        inner = cw - 2 * t.pad_small
+        badge = 26
+        avail = h - t.pad_small * 2 - badge - 8
+        size = t.size_body
+        while size > 10:
+            ok = all(MEASURE.lines(it["title"], size, True, inner) * size * LINE_HEIGHT + 4
+                     + MEASURE.lines(it["text"], size - 2, False, inner) * (size - 2)
+                     * LINE_HEIGHT <= avail for it in items)
+            if ok:
+                break
+            size -= 0.5
+        else:
+            WARNINGS.append(f"OVERFLOW risk: {where} steps do not fit at 10 pt")
+        for i, it in enumerate(items):
+            cx = x + i * (cw + arrow)
+            box(slide, cx, y, cw, h, fill=t.surface_subtle, radius=t.radius)
+            box(slide, cx + t.pad_small, y + t.pad_small, badge, badge, fill=t.surface_brand,
+                radius=badge / 2)
+            text(slide, cx + t.pad_small, y + t.pad_small, badge, badge, [str(i + 1)], t, 13,
+                 t.text_inverse, bold=True, align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+            ty = y + t.pad_small + badge + 8
+            text(slide, cx + t.pad_small, ty, inner, y + h - ty - t.pad_small,
+                 [it["title"], it["text"]], t, size, t.text_primary, space_after=4,
+                 styles=[(size, t.text_primary, True), (size - 2, t.text_secondary, False)])
+            if i < n - 1:
+                ax = cx + cw + 3
+                shp = slide.shapes.add_shape(MSO_SHAPE.RIGHT_ARROW, Pt(ax), Pt(y + h / 2 - 7),
+                                             Pt(arrow - 6), Pt(14))
+                st = shp._element.find(qn("p:style"))
+                if st is not None:
+                    shp._element.remove(st)
+                shp.fill.solid()
+                shp.fill.fore_color.rgb = rgb(t.accent)
+                shp.line.fill.background()
 
     def b_cards(self, slide, b, x, y, w, h, where):
         t = self.t
@@ -611,36 +663,27 @@ class Renderer:
                  t.text_primary, anchor=MSO_ANCHOR.MIDDLE)
 
     # --- slide chrome ----------------------------------------------------
+    # Minimal chrome: the brand isotype and the slide number, nothing else.
 
-    def footer(self, slide, index, source, dark=False):
+    def footer(self, slide, index, dark=False):
         t = self.t
-        y = SLIDE_H - 34
+        y = SLIDE_H - 30
         color = t.text_inverse if dark else t.text_secondary
-        if not dark:
-            box(slide, t.margin, y - 10, SLIDE_W - 2 * t.margin, 1, fill=t.border_subtle)
         iso = ASSETS / "brand" / ("isotype-negative.png" if dark else "isotype.png")
-        picture(slide, iso, t.margin, y - 2, 22, 22)
-        text(slide, t.margin + 30, y, 260, 18, [self.meta["footer"]], t, 11, color,
-             anchor=MSO_ANCHOR.MIDDLE)
-        if source:
-            sw = SLIDE_W - 2 * t.margin - 30 - 260 - 70
-            size = fit([source], sw, 18, 10, 8, where=f"slide {index} source")
-            text(slide, t.margin + 300, y, sw, 18, [source], t, size, color,
-                 anchor=MSO_ANCHOR.MIDDLE)
-        text(slide, SLIDE_W - t.margin - 60, y, 60, 18, [f"{index} / {self.total}"], t, 11,
-             color, align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE)
+        picture(slide, iso, t.margin, y - 2, 20, 20)
+        text(slide, SLIDE_W - t.margin - 60, y, 60, 16, [str(index)], t, 11, color,
+             align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE)
 
     def notes(self, slide, s):
         head = []
-        if s["kind"] == "divider":
-            head.append(f"Parte {s['part']}: {s['time']} en total · "
-                        f"Presenta: {self.member(s['presenter'])}")
-        elif s.get("time"):
-            head.append(f"Tiempo objetivo: {s['time']} · "
-                        f"Presenta: {self.member(s.get('presenter', ''))}")
-        if s.get("number"):
-            head.append(f"Diapositiva {s['number']} de {self.script_total} del guion "
-                        "(docs/speaker-script.md)")
+        if s.get("presenter"):
+            who = " y ".join(self.member(c) for c in s["presenter"].split("+"))
+            line = f"Presenta: {who}"
+            if s.get("time"):
+                line += f" · Tiempo objetivo: {s['time']}"
+            head.append(line)
+        if s.get("source"):
+            head.append(f"Fuente: {s['source']}")
         body = s.get("notes", "").strip()
         slide.notes_slide.notes_text_frame.text = "\n".join(head + ([""] if head else []) + [body])
 
@@ -650,19 +693,54 @@ class Renderer:
         t = self.t
         box(slide, 0, 0, SLIDE_W, SLIDE_H, fill=t.surface)
         box(slide, 0, 0, SLIDE_W, 6, fill=t.surface_brand)
-        text(slide, t.margin, 26, SLIDE_W - 2 * t.margin, 18, [s["eyebrow"].upper()], t,
-             12, t.text_brand, bold=True, letter=1.2)
         tw = SLIDE_W - 2 * t.margin
-        size = next((v / 2 for v in range(int(t.size_title * 2), 47, -1)
+        size = next((v / 2 for v in range(int(t.size_title * 2), 43, -1)
                      if MEASURE.lines(s["title"], v / 2, True, tw) == 1), None)
         if size is None:
-            size = fit([s["title"]], tw, 72, t.size_title, 22, bold=True,
+            size = fit([s["title"]], tw, 52, t.size_title - 2, 18, bold=True,
                        where=f"slide {index} title")
-        text(slide, t.margin, 48, tw, 76, [s["title"]], t, size, t.text_primary, bold=True,
-             anchor=MSO_ANCHOR.MIDDLE)
-        top, bottom = 136, SLIDE_H - 56
+        text(slide, t.margin, 20, tw, 50, [s["title"]], t, size, t.text_primary, bold=True,
+             anchor=MSO_ANCHOR.BOTTOM)
+        sub = s.get("subtitle", "")
+        ss = fit([sub], tw, 22, t.size_body_large, 12, where=f"slide {index} subtitle")
+        text(slide, t.margin, 74, tw, 24, [sub], t, ss, t.text_secondary)
+        box(slide, t.margin, 104, 48, 3, fill=t.accent)
+        top, bottom = 120, SLIDE_H - 44
         self.blocks(slide, s["blocks"], t.margin, top, tw, bottom - top, f"slide {index}")
-        self.footer(slide, index, s.get("source"))
+        self.footer(slide, index)
+
+    def diagram(self, slide, s, index):
+        """A diagram on almost the whole slide: a slim title band, then the
+        image placed with a contain fit inside DIAGRAM_BOX."""
+        t = self.t
+        box(slide, 0, 0, SLIDE_W, SLIDE_H, fill=t.surface)
+        box(slide, 0, 0, SLIDE_W, 4, fill=t.surface_brand)
+        x0 = DIAGRAM_EDGE + 4
+        tw = SLIDE_W - x0 - 110
+        size = next((v / 2 for v in range(44, 27, -1)
+                     if MEASURE.lines(s["title"], v / 2, True, tw) == 1), None)
+        if size is None:
+            size = 14
+            WARNINGS.append(f"OVERFLOW risk: slide {index} diagram title is long")
+        text(slide, x0, 8, tw, 26, [s["title"]], t, size, t.text_primary, bold=True,
+             anchor=MSO_ANCHOR.MIDDLE)
+        sub = s.get("subtitle", "")
+        ss = fit([sub], tw, 15, 11.5, 9, where=f"slide {index} diagram subtitle")
+        text(slide, x0, 35, tw, 16, [sub], t, ss, t.text_secondary, anchor=MSO_ANCHOR.MIDDLE)
+        chip = s.get("chip")
+        right = SLIDE_W - DIAGRAM_EDGE - 4
+        text(slide, right - 40, 12, 40, 18, [str(index)], t, 11, t.text_secondary,
+             align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE)
+        picture(slide, ASSETS / "brand" / "isotype.png", right - 64, 12, 18, 18)
+        if chip:
+            cw = MEASURE.width(chip, 9.5, True) + 16
+            box(slide, right - cw, 33, cw, 16, fill=t.surface_brand, radius=8)
+            text(slide, right - cw, 33, cw, 16, [chip], t, 9.5, t.text_inverse, bold=True,
+                 align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+        path = diagram_image(s["asset"], s.get("detail"))
+        x, y, w, h = DIAGRAM_BOX
+        px, py, pw, ph = picture(slide, path, x, y, w, h)
+        self.placed.append((index, s["asset"], s.get("detail"), pw, ph))
 
     def cover(self, slide, s, index):
         t = self.t
@@ -672,9 +750,9 @@ class Renderer:
         box(slide, t.margin, 178, 64, 4, fill=t.accent)
         text(slide, t.margin, 196, 760, 22, [s["eyebrow"].upper()], t, 14, t.text_inverse,
              bold=True, letter=1.5)
-        text(slide, t.margin, 224, 820, 120, [s["title"]], t, t.size_display,
+        text(slide, t.margin, 224, 860, 120, [s["title"]], t, t.size_display,
              t.text_inverse, bold=True)
-        text(slide, t.margin, 344, 820, 30, [s["subtitle"]], t, t.size_heading,
+        text(slide, t.margin, 344, 860, 30, [s["subtitle"]], t, t.size_heading,
              t.text_inverse)
         team = self.meta["team"]
         cw = (SLIDE_W - 2 * t.margin - 3 * t.gap) / 4
@@ -690,31 +768,6 @@ class Renderer:
                  styles=[(11, t.text_inverse, False), (size, t.text_inverse, True),
                          (size, t.text_inverse, True)])
         text(slide, t.margin, 478, 400, 20, [s["date"]], t, t.size_caption, t.text_inverse)
-        text(slide, SLIDE_W - t.margin - 60, 478, 60, 20, [f"{index} / {self.total}"], t, 11,
-             t.text_inverse, align=PP_ALIGN.RIGHT)
-
-    def divider(self, slide, s, index):
-        t = self.t
-        box(slide, 0, 0, SLIDE_W, SLIDE_H, fill=t.surface_brand)
-        picture(slide, ASSETS / "brand" / "isotype-negative.png", 600, 110, 300, 300)
-        text(slide, t.margin, 96, 520, 24, [f"PARTE {s['part']} DE 4"], t, 16,
-             t.text_inverse, bold=True, letter=2)
-        box(slide, t.margin, 128, 64, 4, fill=t.accent)
-        size = fit([s["title"]], 520, 120, t.size_display, 30, bold=True,
-                   where=f"slide {index} divider title")
-        text(slide, t.margin, 146, 520, 120, [s["title"]], t, size, t.text_inverse,
-             bold=True, anchor=MSO_ANCHOR.MIDDLE)
-        lines = [f"{m['first']} {m['last']} · {m['role']}" for m in self.meta["team"]]
-        size = min(fit([ln], 520, (t.size_heading + 2) * LINE_HEIGHT, t.size_heading + 2,
-                       14, bold=True, where=f"slide {index} presenter") for ln in lines)
-        m = self.team[s["presenter"]]
-        text(slide, t.margin, 278, 520, 58,
-             [f"{m['first']} {m['last']} · {m['role']}", f"{s['time']} minutos"], t, size,
-             t.text_inverse, styles=[(size, t.text_inverse, True),
-                                     (t.size_body_large, t.text_inverse, False)])
-        text(slide, t.margin, 344, 520, 130, s["agenda"], t, t.size_body_large,
-             t.text_inverse, space_after=6)
-        self.footer(slide, index, None, dark=True)
 
     def team_slide(self, slide, s, index):
         t = self.t
@@ -730,10 +783,9 @@ class Renderer:
                                  Pt(size * 0.8))
         # Header strip in the style of the content slides.
         box(slide, 0, 0, SLIDE_W, 6, fill=t.surface_brand)
-        hw = (SLIDE_W - 2 * t.margin) / 3
+        hw = (SLIDE_W - 2 * t.margin) / 2
         for i, (label, align) in enumerate(((s["institution"], PP_ALIGN.LEFT),
-                                            (s["occasion"], PP_ALIGN.CENTER),
-                                            (f"{index} / {self.total}", PP_ALIGN.RIGHT))):
+                                            (str(index), PP_ALIGN.RIGHT))):
             text(slide, t.margin + i * hw, 22, hw, 18, [label.upper()], t, 12,
                  t.text_brand, bold=True, letter=1.2, align=align, anchor=MSO_ANCHOR.MIDDLE)
         box(slide, t.margin, 50, SLIDE_W - 2 * t.margin, 1, fill=t.border_subtle)
@@ -765,26 +817,79 @@ class Renderer:
                  name_size, t.brand_primary, bold=True)
             text(slide, px, ny + 2 * name_size * LINE_HEIGHT + 2, pw, 22, [m["role"]], t,
                  t.size_body, t.text_secondary)
-        iso = ASSETS / "brand" / "isotype.png"
         y = SLIDE_H - 34
         box(slide, t.margin, y - 10, SLIDE_W - 2 * t.margin, 1, fill=t.border_subtle)
-        picture(slide, iso, t.margin, y - 2, 22, 22)
-        text(slide, t.margin + 30, y, 260, 18, [self.meta["footer"]], t, 11,
-             t.text_secondary, anchor=MSO_ANCHOR.MIDDLE)
+        picture(slide, ASSETS / "brand" / "isotype.png", t.margin, y - 2, 22, 22)
 
-    def closing(self, slide, s, index):
+    def qr(self, slide, s, index):
         t = self.t
         box(slide, 0, 0, SLIDE_W, SLIDE_H, fill=t.surface_brand_strong)
-        picture(slide, ASSETS / "brand" / "isotype-negative.png", (SLIDE_W - 150) / 2, 90,
-                150, 150)
-        text(slide, t.margin, 262, SLIDE_W - 2 * t.margin, 70, [s["title"]], t, 52,
-             t.text_inverse, bold=True, align=PP_ALIGN.CENTER)
-        box(slide, (SLIDE_W - 64) / 2, 340, 64, 4, fill=t.accent)
-        text(slide, t.margin, 356, SLIDE_W - 2 * t.margin, 34, [s["subtitle"]], t,
-             t.size_title, t.text_inverse, align=PP_ALIGN.CENTER)
-        text(slide, t.margin, 404, SLIDE_W - 2 * t.margin, 24, [s["line"]], t,
-             t.size_body, t.text_inverse, align=PP_ALIGN.CENTER)
-        self.footer(slide, index, None, dark=True)
+        picture(slide, ASSETS / "brand" / "logo-negative.png", t.margin, 64, 260, 82,
+                align="left")
+        box(slide, t.margin, 178, 64, 4, fill=t.accent)
+        size = fit([s["title"]], 500, 120, t.size_display, 28, bold=True,
+                   where=f"slide {index} qr title")
+        text(slide, t.margin, 196, 500, 120, [s["title"]], t, size, t.text_inverse, bold=True)
+        text(slide, t.margin, 324, 500, 60, [s["subtitle"]], t, t.size_body_large,
+             t.text_inverse)
+        text(slide, t.margin, 400, 520, 24, [s["url"]], t, t.size_body, t.accent, bold=True)
+        q = 300
+        qx, qy = SLIDE_W - t.margin - q, (SLIDE_H - q) / 2
+        box(slide, qx, qy, q, q, fill="FFFFFF", radius=t.radius)
+        picture(slide, ASSETS / "images" / "qr-web.png", qx + 18, qy + 18, q - 36, q - 36)
+        self.footer(slide, index, dark=True)
+
+
+def diagram_image(key: str, detail: int | None) -> Path:
+    name = key if not detail else f"{key}-d{detail}"
+    return ASSETS / "diagrams" / f"{name}.png"
+
+
+def expand(content: dict) -> list[dict]:
+    """Expand `annex` into one slide per diagram view and drop slides whose
+    optional diagram is not rendered yet. Fills the annex titles."""
+    catalog = content["assets"]["diagrams"]
+    out = []
+    for s in content["slides"]:
+        if s["kind"] == "diagram":
+            spec = catalog[s["asset"]]
+            if not diagram_image(s["asset"], s.get("detail")).exists():
+                if spec.get("optional"):
+                    NOTES.append(f"SKIPPED: diagram slide {s['asset']} (not rendered yet)")
+                    continue
+                sys.exit(f"ERROR: missing diagram image for {s['asset']}; run --refresh-assets")
+            out.append(s)
+        elif s["kind"] == "annex":
+            n = 0
+            for key, spec in catalog.items():
+                if not diagram_image(key, None).exists():
+                    NOTES.append(f"SKIPPED: annex diagram {key} (not rendered yet)")
+                    continue
+                n += 1
+                aid = f"A{n:02d}"
+                full = {"kind": "diagram", "asset": key, "title": spec["title"],
+                        "subtitle": f"Anexo {aid} · {spec['src']} · {spec['boxes']}",
+                        "chip": f"ANEXO {aid}",
+                        "notes": f"Anexo {aid}. Vista completa de {spec['src']}. "
+                                 "Se muestra solo para responder preguntas."}
+                out.append(full)
+                details = spec.get("details", [])
+                for k, d in enumerate(details, start=1):
+                    out.append({"kind": "diagram", "asset": key, "detail": k,
+                                "title": d["label"][0].upper() + d["label"][1:],
+                                "subtitle": f"{spec['title']} · anexo {aid}, detalle {k} de "
+                                            f"{len(details)}",
+                                "chip": f"DETALLE {aid}.{k}", "full_of": full,
+                                "notes": f"Detalle {k} de {len(details)} del anexo {aid}: "
+                                         f"{d['label']}."})
+        else:
+            out.append(s)
+    for i, s in enumerate(out, start=1):
+        s["_index"] = i
+    for s in out:
+        if s.get("full_of"):
+            s["subtitle"] += f" · vista completa en la diapositiva {s['full_of']['_index']}"
+    return out
 
 
 def build(content: dict, theme: Theme, out: Path):
@@ -795,14 +900,15 @@ def build(content: dict, theme: Theme, out: Path):
     prs.core_properties.language = "es-CO"
     prs.core_properties.author = "Aroma Pacífico"
     blank = prs.slide_layouts[6]
-    slides = content["slides"]
+    slides = expand(content)
     r = Renderer(theme, len(slides), content["meta"])
-    r.script_total = max(s.get("number", 0) for s in slides)
+    r.placed = []
     for i, s in enumerate(slides, start=1):
         slide = prs.slides.add_slide(blank)
         getattr(r, "team_slide" if s["kind"] == "team" else s["kind"])(slide, s, i)
         r.notes(slide, s)
     prs.save(out)
+    legibility_report(content, r.placed)
     return len(slides)
 
 
@@ -832,24 +938,149 @@ def svg_size(path: Path) -> tuple[float, float]:
 
 def render_svg(svg: Path, out: Path, width_px: int, background: str | None):
     """Render an SVG with headless Chrome. Chrome is used because the
-    diagrams use foreignObject labels and the brand marks use SVG masks."""
+    diagrams use foreignObject labels and the brand marks use SVG masks.
+    Large images are rendered in tiles of at most TILE pixels and stitched,
+    because a single very large Chrome screenshot silently truncates."""
+    tile = 3000
     w, h = svg_size(svg)
-    height_px = round(width_px * h / w)
+    W, H = width_px, round(width_px * h / w)
     bg = background or "transparent"
+    mode = "RGB" if background else "RGBA"
+    canvas = Image.new(mode, (W, H), background or (0, 0, 0, 0))
     with tempfile.TemporaryDirectory() as tmp:
-        page = Path(tmp) / "page.html"
-        page.write_text(
-            f'<html><body style="margin:0;background:{bg}">'
-            f'<img src="{svg.resolve().as_uri()}" '
-            f'style="width:{width_px}px;height:{height_px}px;display:block">'
-            "</body></html>", encoding="utf-8")
-        shot = Path(tmp) / "shot.png"
-        subprocess.run([chrome_binary(), "--headless=new", "--disable-gpu", "--no-sandbox",
-                        "--hide-scrollbars", f"--window-size={width_px},{height_px}",
-                        "--default-background-color=00000000",
-                        f"--screenshot={shot}", page.as_uri()],
-                       check=True, capture_output=True)
-        shutil.copy(shot, out)
+        for ty in range(0, H, tile):
+            for tx in range(0, W, tile):
+                tw, th = min(tile, W - tx), min(tile, H - ty)
+                page = Path(tmp) / "page.html"
+                page.write_text(
+                    f'<html><body style="margin:0;background:{bg};overflow:hidden">'
+                    f'<img src="{svg.resolve().as_uri()}" style="position:absolute;'
+                    f'left:{-tx}px;top:{-ty}px;width:{W}px;height:{H}px;display:block">'
+                    "</body></html>", encoding="utf-8")
+                shot = Path(tmp) / "shot.png"
+                subprocess.run([chrome_binary(), "--headless=new", "--disable-gpu",
+                                "--no-sandbox", "--hide-scrollbars",
+                                "--force-device-scale-factor=1", f"--window-size={tw},{th}",
+                                "--default-background-color=00000000",
+                                f"--screenshot={shot}", page.as_uri()],
+                               check=True, capture_output=True, timeout=600)
+                with Image.open(shot) as part:
+                    canvas.paste(part.convert(mode).crop((0, 0, tw, th)), (tx, ty))
+    canvas.save(out)
+
+
+def svg_text_sizes(svg: Path) -> list[float]:
+    """Font sizes, in SVG units, of every text label in a draw.io export."""
+    src = svg.read_text(encoding="utf-8", errors="ignore")
+    return ([float(v) for v in re.findall(r"font-size:\s*([\d.]+)px", src)]
+            + [float(v) for v in re.findall(r'font-size="([\d.]+)(?:px)?"', src)])
+
+
+def body_size(sizes: list[float]) -> float:
+    """The smallest font size used by at least five labels: the size of the
+    body text, ignoring a stray footnote."""
+    counts = {}
+    for v in sizes:
+        counts[v] = counts.get(v, 0) + 1
+    common = [v for v, n in counts.items() if n >= 5]
+    return min(common or sizes or [12.0])
+
+
+def save_diagram(im: Image.Image, out: Path):
+    """Fit inside DIAGRAM_MAX_PX (never upscaled) and save as an indexed PNG:
+    the diagrams use flat colors, so 256 colors keep text and icons sharp at
+    a fraction of the size."""
+    im = im.convert("RGB")
+    scale = min(DIAGRAM_MAX_PX[0] / im.width, DIAGRAM_MAX_PX[1] / im.height, 1.0)
+    if scale < 1.0:
+        im = im.resize((round(im.width * scale), round(im.height * scale)), Image.LANCZOS)
+    im.quantize(colors=256, method=Image.Quantize.MEDIANCUT,
+                dither=Image.Dither.NONE).save(out, optimize=True)
+
+
+def trim_white(im: Image.Image, pad: int) -> Image.Image:
+    """Crop uniform white margins, keeping `pad` pixels of air."""
+    gray = im.convert("L").point(lambda v: 255 if v < 245 else 0)
+    bbox = gray.getbbox()
+    if not bbox:
+        return im
+    l, t, r, b = bbox
+    return im.crop((max(0, l - pad), max(0, t - pad), min(im.width, r + pad),
+                    min(im.height, b + pad)))
+
+
+def refresh_diagrams(content: dict, diagrams: Path):
+    out_dir = ASSETS / "diagrams"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    meta = {}
+    with tempfile.TemporaryDirectory() as tmp:
+        for key, spec in content["assets"]["diagrams"].items():
+            svg = diagrams / spec["src"]
+            if not svg.exists():
+                if spec.get("optional"):
+                    print(f"Diagram {key}: {spec['src']} not found, skipped (optional)")
+                    continue
+                sys.exit(f"ERROR: {svg} not found")
+            w, h = svg_size(svg)
+            raw = Path(tmp) / f"{key}.png"
+            scale = min(DIAGRAM_MASTER_SCALE, (DIAGRAM_MASTER_PIXELS / (w * h)) ** 0.5)
+            render_svg(svg, raw, round(w * scale), "#FFFFFF")
+            for stale in out_dir.glob(f"{key}-d*.png"):
+                stale.unlink()
+            with Image.open(raw) as master:
+                master = master.convert("RGB")
+                save_diagram(trim_white(master, 24), out_dir / f"{key}.png")
+                for k, d in enumerate(spec.get("details", []), start=1):
+                    l, t, r, b = d["box"]
+                    crop = master.crop((round(l * master.width), round(t * master.height),
+                                        round(r * master.width), round(b * master.height)))
+                    save_diagram(crop, out_dir / f"{key}-d{k}.png")
+            meta[key] = {"svg_units": [w, h], "body_px": body_size(svg_text_sizes(svg))}
+            print(f"Diagram {key}: {spec['src']} rendered with "
+                  f"{len(spec.get('details', []))} detail views")
+    (out_dir / "diagrams.json").write_text(json.dumps(meta, indent=2) + "\n", encoding="utf-8")
+
+
+def legibility_report(content: dict, placed: list):
+    """Body text height at 1920 px for every diagram view in the deck. A full
+    view below LEGIBLE_PX needs detail views; the annex has them."""
+    meta_path = ASSETS / "diagrams" / "diagrams.json"
+    if not meta_path.exists():
+        return
+    meta = json.loads(meta_path.read_text(encoding="utf-8"))
+    catalog = content["assets"]["diagrams"]
+    lines = []
+    for index, key, detail, pw, ph in placed:
+        w, h = meta[key]["svg_units"]
+        if detail:
+            l, t, r, b = catalog[key]["details"][detail - 1]["box"]
+            w, h = w * (r - l), h * (b - t)
+        px = meta[key]["body_px"] * pw / w * PX_PER_PT
+        has_detail = bool(catalog[key].get("details"))
+        if px >= LEGIBLE_PX:
+            flag = "OK"
+        elif not detail and has_detail:
+            flag = "FULL VIEW, SEE DETAIL VIEWS"
+        elif px >= LEGIBLE_PX - 1:
+            flag = "ABOUT 10 PX"
+        else:
+            flag = "SMALL"
+        lines.append(f"{index:>4}  {key + (f' detail {detail}' if detail else ''):<44}"
+                     f"{px:5.1f} px  {flag}")
+        if flag == "SMALL":
+            WARNINGS.append(f"LEGIBILITY: slide {index} {key} body text {px:.1f} px at 1920")
+    report = DECK_DIR / "previews" / "diagram-legibility.txt"
+    report.parent.mkdir(exist_ok=True)
+    report.write_text("Body text height of each diagram view at 1920 px (smallest font used "
+                      "by five or more labels)\n" + "\n".join(lines) + "\n", encoding="utf-8")
+
+
+def make_qr(url: str, out: Path):
+    try:
+        import segno
+    except ImportError:
+        sys.exit("ERROR: --refresh-assets needs segno for the QR code (pip install segno)")
+    segno.make(url, error="m").save(str(out), scale=20, border=0, dark="#0a3a41")
 
 
 def crop_save(src: Path, out: Path, crop, max_w: int):
@@ -870,7 +1101,7 @@ def crop_portrait(src: Path, out: Path, spec: dict):
     `spec` gives the eye midpoint as fractions of the photo ([x, y]) and the
     eye-to-chin distance as a fraction of the photo height. Where the crop
     leaves the photo at the top, it is filled with the wall color and the
-    photo fades into it; other edges are mirrored. A warning is printed."""
+    photo fades into it; other the sides are mirrored and the bottom row is extended. A warning is printed."""
     with Image.open(src) as im:
         im = ImageOps.exif_transpose(im).convert("RGB")
     w, h = im.size
@@ -903,8 +1134,9 @@ def crop_portrait(src: Path, out: Path, spec: dict):
                                          canvas.crop((pl, pt, pl + w, pt + band)), ramp),
                          (pl, pt))
         if pb:
-            canvas.paste(im.crop((0, h - pb, w, h)).transpose(Image.FLIP_TOP_BOTTOM),
-                         (pl, pt + h))
+            # Repeat the last row: clothing continues straight down instead
+            # of reflecting the tie or the collar.
+            canvas.paste(im.crop((0, h - 1, w, h)).resize((w, pb)), (pl, pt + h))
         if pl:
             canvas.paste(canvas.crop((pl, 0, 2 * pl, canvas.height))
                          .transpose(Image.FLIP_LEFT_RIGHT), (0, 0))
@@ -919,11 +1151,25 @@ def crop_portrait(src: Path, out: Path, spec: dict):
     return im.size
 
 
+def newest_photo(photos: Path, key: str) -> Path:
+    """The most recently modified photo in `photos` whose name starts with
+    `key`, so a replacement photo is picked up without editing this file."""
+    found = sorted((f for f in photos.iterdir()
+                    if f.is_file() and f.name.lower().startswith(key.lower())),
+                   key=lambda f: f.stat().st_mtime)
+    if not found:
+        sys.exit(f"ERROR: no photo starting with {key!r} in {photos}")
+    return found[-1]
+
+
 def refresh_team(content: dict, photos: Path):
     (ASSETS / "team").mkdir(parents=True, exist_ok=True)
-    for name, spec in content["assets"]["team"].items():
-        size = crop_portrait(photos / spec["src"], ASSETS / "team" / f"{name}.jpg", spec)
-        print(f"Portrait {name}: {size[0]} x {size[1]} px")
+    for name, variants in content["assets"]["team"].items():
+        src = newest_photo(photos, name)
+        if src.name not in variants:
+            sys.exit(f"ERROR: {src.name} has no eye position in content.yaml assets.team.{name}")
+        size = crop_portrait(src, ASSETS / "team" / f"{name}.jpg", variants[src.name])
+        print(f"Portrait {name}: {src.name}, {size[0]} x {size[1]} px")
 
 
 def refresh_assets(content: dict, ds: Path, diagrams: Path, theme_colors: dict):
@@ -942,14 +1188,10 @@ def refresh_assets(content: dict, ds: Path, diagrams: Path, theme_colors: dict):
                 colored.write_text(source.replace("currentColor", "#" + color),
                                    encoding="utf-8")
                 render_svg(colored, ASSETS / "icons" / f"{svg.stem}-{variant}.png", 192, None)
-        for name, spec in content["assets"]["diagrams"].items():
-            svg = diagrams / spec["src"]
-            w, _ = svg_size(svg)
-            raw = Path(tmp) / f"{name}.png"
-            render_svg(svg, raw, round(w * 2), "#FFFFFF")
-            crop_save(raw, ASSETS / "images" / f"{name}.png", spec.get("crop"), 2600)
     for name, spec in content["assets"]["previews"].items():
         crop_save(ds / spec["src"], ASSETS / "images" / f"{name}.png", spec.get("crop"), 1200)
+    make_qr(content["meta"]["website"], ASSETS / "images" / "qr-web.png")
+    refresh_diagrams(content, diagrams)
     print(f"Assets refreshed under {ASSETS}")
 
 
@@ -967,14 +1209,43 @@ def render(pptx: Path):
     pdf = pptx.with_suffix(".pdf")
     previews = DECK_DIR / "previews"
     previews.mkdir(exist_ok=True)
-    for old in previews.glob("slide-*.png"):
+    for old in list(previews.glob("slide-*.png")) + list(previews.glob("contact-sheet-*.png")):
         old.unlink()
-    subprocess.run(["pdftoppm", "-r", "96", "-png", str(pdf), str(previews / "slide")],
-                   check=True)
-    for png in previews.glob("slide-*.png"):
+    subprocess.run(["pdftoppm", "-scale-to-x", str(PREVIEW_PX), "-scale-to-y", "-1", "-png",
+                    str(pdf), str(previews / "raw")], check=True)
+    pngs = []
+    for png in previews.glob("raw-*.png"):
         num = int(re.search(r"(\d+)\.png$", png.name).group(1))
-        png.rename(previews / f"slide-{num:02d}.png")
-    print(f"PDF: {pdf}\nPreviews: {previews}")
+        dest = previews / f"slide-{num:03d}.png"
+        with Image.open(png) as im:
+            # 256 indexed colors: the slides are flat colors, and the file
+            # is less than half the size.
+            im.convert("RGB").quantize(256, method=Image.Quantize.MEDIANCUT,
+                                       dither=Image.Dither.NONE).save(dest, optimize=True)
+        png.unlink()
+        pngs.append((num, dest))
+    contact_sheets(sorted(pngs), previews)
+    print(f"PDF: {pdf}\nPreviews: {previews} ({len(pngs)} slides at {PREVIEW_PX} px)")
+
+
+def contact_sheets(pngs: list, out_dir: Path, per_sheet: int = 30, cols: int = 5):
+    """Thumbnails of every slide with its number, for the review."""
+    tw = 380
+    th = round(tw * SLIDE_H / SLIDE_W)
+    label = 22
+    font = ImageFont.truetype(_font_file("DejaVu Sans:bold") or _font_file("Arial:bold"), 15)
+    for sheet, start in enumerate(range(0, len(pngs), per_sheet), start=1):
+        chunk = pngs[start:start + per_sheet]
+        rows = -(-len(chunk) // cols)
+        im = Image.new("RGB", (cols * (tw + 12) + 12, rows * (th + label + 12) + 12), "#d9d9d9")
+        draw = ImageDraw.Draw(im)
+        for i, (num, path) in enumerate(chunk):
+            x = 12 + (i % cols) * (tw + 12)
+            y = 12 + (i // cols) * (th + label + 12)
+            with Image.open(path) as sl:
+                im.paste(sl.convert("RGB").resize((tw, th), Image.LANCZOS), (x, y + label))
+            draw.text((x, y + 2), f"{num}", fill="#0a3a41", font=font)
+        im.save(out_dir / f"contact-sheet-{sheet}.png", optimize=True)
 
 
 def main():
@@ -985,6 +1256,8 @@ def main():
                     default=DECK_DIR.parent.parent / "aroma-pacifico-design-system")
     ap.add_argument("--diagrams", type=Path,
                     default=DECK_DIR.parent.parent / "aroma-pacifico-diagrams")
+    ap.add_argument("--refresh-diagrams", action="store_true",
+                    help="re-render only the diagrams and their detail views")
     ap.add_argument("--team-photos", type=Path,
                     help="crop the team portraits from the original photos in this folder")
     ap.add_argument("--render", action="store_true", help="also export PDF and PNG previews")
@@ -1000,6 +1273,9 @@ def main():
                   "review": tokens.color("color.sack.in-transit.icon"),
                   "pending": tokens.color("color.sack.in-preparation.icon")}
         refresh_assets(content, args.design_system, args.diagrams, colors)
+    elif args.refresh_diagrams:
+        make_qr(content["meta"]["website"], ASSETS / "images" / "qr-web.png")
+        refresh_diagrams(content, args.diagrams)
     if args.team_photos:
         refresh_team(content, args.team_photos)
 
@@ -1009,6 +1285,8 @@ def main():
     count = build(content, theme, args.out)
     print(f"Built {args.out} with {count} slides, font {theme.font} "
           f"(fallback chain: {', '.join(theme.families[1:])})")
+    for n in NOTES:
+        print("NOTE:", n)
     for w in WARNINGS:
         print("WARNING:", w)
     if args.render:
