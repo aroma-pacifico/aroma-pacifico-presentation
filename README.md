@@ -16,6 +16,12 @@ This repository holds the slide decks, demonstration walkthroughs, speaker notes
 
 | Path | Purpose |
 |---|---|
+| `deck/aroma-pacifico-sustentacion.pptx` | The defense slides in Spanish: 24 slides (cover, four part dividers, the 18 content slides and a questions slide), 16:9, with Spanish speaker notes and target times |
+| `deck/aroma-pacifico-sustentacion.pdf` | PDF export of the same deck, with Roboto embedded; the safe copy to project |
+| `deck/content.yaml` | Slide text, speaker notes and the catalog of diagram crops; edit this to change the deck |
+| `deck/build_deck.py` | Generator: reads the design tokens and `content.yaml` and writes the PPTX, the PDF and the previews |
+| `deck/assets/` | Rendered inputs: a copy of the design tokens, brand marks, icons, diagram crops and design-system previews |
+| `deck/previews/slide-NN.png` | One PNG per slide, rendered from the PDF, for visual review |
 | `docs/final-presentation.md` | 20-minute slide deck: 18 slides in four parts by role (SR1, SR2, JR1, JR2), with sources and the register of pending content |
 | `docs/speaker-script.md` | Spoken script per slide, with timings and the rehearsal log |
 | `docs/defense-qa.md` | Short answers to the likely questions of the defense session |
@@ -24,6 +30,17 @@ This repository holds the slide decks, demonstration walkthroughs, speaker notes
 ```text
 aroma-pacifico-presentation/
 |-- README.md
+|-- deck/
+|   |-- aroma-pacifico-sustentacion.pdf
+|   |-- aroma-pacifico-sustentacion.pptx
+|   |-- assets/
+|   |   |-- brand/
+|   |   |-- icons/
+|   |   |-- images/
+|   |   `-- tokens.json
+|   |-- build_deck.py
+|   |-- content.yaml
+|   `-- previews/
 `-- docs/
     |-- case/
     |   `-- case-statement.pdf
@@ -31,3 +48,30 @@ aroma-pacifico-presentation/
     |-- final-presentation.md
     `-- speaker-script.md
 ```
+
+## The slide file
+
+The deck is the Spanish rendering of `docs/final-presentation.md`, built on the Aroma Pacífico design system (`aroma-pacifico-design-system`): colors, font family, sizes, spacing and radius come from `tokens/tokens.json`, the marks from `brand/` and the icons from `icons/`. Text and background pairs are taken from `tokens/contrast-report.md`. Diagrams are crops of the merged SVG exports of `aroma-pacifico-diagrams`, so they stay legible when projected. Each part opens with a divider that names the presenter by role and the part time. The cover holds the placeholders `[Nombre SR1]` to `[Nombre JR2]`; the team writes the names there and nowhere else.
+
+**Opening it.** Open the PPTX in PowerPoint, Keynote, Google Slides or LibreOffice Impress; the speaker notes carry the script of each slide with its target time. To project without font risk, use the PDF.
+
+**Fonts.** The token font is Roboto (regular and bold), with the token fallback chain Noto Sans, system UI fonts and Arial. Install Roboto from Google Fonts (SIL Open Font License) before editing or presenting the PPTX. Without it, PowerPoint substitutes a sans font such as Arial; the generator sizes every text box against both Roboto and Arial metrics, so the deck still fits with the fallback. The PDF embeds Roboto.
+
+**Editing.** Change text and notes in `deck/content.yaml`, not in PowerPoint, so the next build keeps the edit. Small last-minute fixes can be made in PowerPoint, but they are lost on the next build.
+
+**Regenerating.** The build needs Python 3 with `python-pptx`, `PyYAML` and `Pillow` (`pip install --user python-pptx pyyaml pillow`). Rendering the PDF and previews also needs LibreOffice and `pdftoppm` (poppler-utils), with Roboto installed where LibreOffice can see it.
+
+```bash
+python3 deck/build_deck.py             # PPTX only
+python3 deck/build_deck.py --render    # PPTX, PDF and deck/previews/slide-NN.png
+```
+
+If the design tokens, the brand, the icons or a diagram change, refresh the rendered assets first. This step reads the sibling checkouts of `aroma-pacifico-design-system` and `aroma-pacifico-diagrams` and needs Google Chrome or Chromium for headless SVG rendering:
+
+```bash
+python3 deck/build_deck.py --refresh-assets \
+  --design-system ../aroma-pacifico-design-system \
+  --diagrams ../aroma-pacifico-diagrams --render
+```
+
+The build prints a warning and exits with status 1 when a text box may overflow. `--font Arial` builds a copy with the fallback font to check the deck without Roboto. After every build, look at the previews before committing.
