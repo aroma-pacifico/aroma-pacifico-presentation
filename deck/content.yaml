@@ -21,7 +21,7 @@ script:
 
     En la portada, Esteban lee el título y pasa a la diapositiva del equipo, donde cada presentador dice su nombre y su rol en el orden de la exposición. Las diapositivas de diagrama completo duran poco: el presentador señala tres zonas y sigue; el detalle queda en el anexo para las preguntas.
   annex: |
-    Después del cierre y el código QR viene el anexo, que no se expone. Tiene cada diagrama publicado en vista completa, sin recortes, y sus vistas de detalle donde el texto del diagrama quedaría por debajo de unos 10 px a 1920 de ancho. Ante una pregunta, quien responde salta a la diapositiva de la tabla y vuelve al cierre al terminar. Las preguntas probables y sus respuestas están en [defense-qa.md](defense-qa.md).
+    Después del cierre y el código QR viene el anexo, que no se expone. Tiene cada diagrama publicado en vista completa, sin recortes, y sus vistas de detalle donde el texto del diagrama quedaría por debajo de unos 10 px a 1920 de ancho. Cada diagrama, completo o en detalle, enlaza a su vista en alta resolución en el sitio del proyecto. Ante una pregunta, quien responde salta a la diapositiva de la tabla; al terminar las preguntas se pasa a la última diapositiva, que repite el cierre con el código QR. Las preguntas probables y sus respuestas están en [defense-qa.md](defense-qa.md).
 
 meta:
   title: "Aroma Pacífico: propuesta técnica del piloto 2026"
@@ -722,7 +722,7 @@ slides:
     presenter: "SR2"
     source: "aroma-pacifico-diagrams, flows/drone-state-machines.svg"
     notes: |
-      El caso, la orden y la misión son máquinas de estado. La orden no sale sin polígono ni registro de vuelo cerrado, y la fumigación sigue abierta hasta persistir la verificación.
+      El caso, la orden y la misión son máquinas de estado. La orden no sale sin polígono ni registro de vuelo cerrado, y la fumigación no se cierra hasta persistir la verificación.
 
   - kind: content
     title: "Un orquestador por eventos coordina las capacidades del dron sin acoplarlas"
@@ -1280,16 +1280,25 @@ slides:
     source: "Síntesis de la propuesta"
     presenter: "SR1"
     notes: |
-      Por qué esta propuesta: funciona sin señal, gobierna los drones con autorización humana, entrega código que coincide con el diagrama dentro de las 100 horas y mantiene el costo bajo control desde el diseño hasta cada pull request. Gracias.
+      Por qué esta propuesta: funciona sin señal, gobierna los drones con autorización humana, entrega código que coincide con el diagrama dentro de las 100 horas y mantiene el costo bajo control desde el diseño hasta cada pull request.
 
+  # The closing slide. The same invitation is repeated as the last slide of
+  # the file, after the annex, so the QR is on screen when questions end.
   - kind: qr
-    title: "Todo el proyecto, en un solo lugar"
-    subtitle: "Arquitectura, diagramas, IaC, costos y sistema de diseño"
+    title: "Gracias"
+    subtitle: "Explore el proyecto completo en el sitio de Aroma Pacífico: arquitectura, diagramas, IaC, costos y sistema de diseño"
     url: "aroma-pacifico.github.io/aroma-pacifico-web"
     presenter: "SR1"
     notes: |
-      Dejamos el sitio del proyecto en el código QR. Recibimos sus preguntas; el anexo tiene cada diagrama completo y sus detalles.
+      Gracias. El código QR lleva al sitio de Aroma Pacífico, con la arquitectura, cada diagrama en alta resolución, la IaC, los costos y el sistema de diseño. Recibimos sus preguntas; el anexo tiene cada diagrama completo y sus detalles.
 
   # Annex: every diagram of aroma-pacifico-diagrams, full and uncropped, then
   # its detail views. Generated from assets.diagrams; used only for questions.
   - kind: annex
+
+  - kind: qr
+    title: "Gracias"
+    subtitle: "Explore el proyecto completo en el sitio de Aroma Pacífico: arquitectura, diagramas, IaC, costos y sistema de diseño"
+    url: "aroma-pacifico.github.io/aroma-pacifico-web"
+    notes: |
+      Cierre repetido al final del archivo: se deja en pantalla al terminar las preguntas.

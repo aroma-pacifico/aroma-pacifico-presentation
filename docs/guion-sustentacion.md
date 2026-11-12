@@ -4,8 +4,8 @@
 |---|---|
 | Estado | Guion de ensayo. El tiempo de cada diapositiva es su texto leído a 130 palabras por minuto; el ensayo completo lo confirma. |
 | Issue | aroma-pacifico/aroma-pacifico-roadmap#38 (A25) |
-| Presentación | `deck/aroma-pacifico-sustentacion.pptx` y `.pdf`: 129 diapositivas, 1 a 60 de exposición y 61 a 129 de anexo |
-| Duración | 24:00 de exposición, dentro de la meta de 20 a 25 minutos |
+| Presentación | `deck/aroma-pacifico-sustentacion.pptx` y `.pdf`: 130 diapositivas, 1 a 60 de exposición y 61 a 129 de anexo, y la 130 repite el cierre con el código QR |
+| Duración | 24:10 de exposición, dentro de la meta de 20 a 25 minutos |
 | Fuente | Generado por `deck/build_deck.py` desde `deck/content.yaml`; las notas del orador del PPTX tienen el mismo texto. No se edita a mano. |
 
 El guion está escrito para decirse en voz alta, en frases cortas, a unas 130 palabras por minuto. Cada presentador adapta la redacción; las cifras y las referencias son la parte fija. Toda cifra es del enunciado del caso, aritmética sobre una de ellas o una meta de diseño: se dice «meta de diseño» y nunca «medido». La fuente de cada diapositiva queda al final de su texto y en las notas del orador, no en la diapositiva.
@@ -20,8 +20,8 @@ En la portada, Esteban lee el título y pasa a la diapositiva del equipo, donde 
 | 2 | Karen Valeria Jurado Calpa (JR1) | 16 a 27 | 4:35 |
 | 3 | Jeanpaul Atkinson Vidales Gallego (SR2) | 28 a 42 | 5:05 |
 | 4 | César Augusto Jiménez Reina (JR2) | 43 a 52 | 4:15 |
-| 5 | Esteban Gaviria Zambrano (SR1) | 53 a 60 | 3:10 |
-| Total | SR1 10:05, JR1 4:35, SR2 5:05, JR2 4:15 | 1 a 60 | 24:00 |
+| 5 | Esteban Gaviria Zambrano (SR1) | 53 a 60 | 3:20 |
+| Total | SR1 10:15, JR1 4:35, SR2 5:05, JR2 4:15 | 1 a 60 | 24:10 |
 
 ## Guion por diapositiva
 
@@ -236,7 +236,7 @@ Fuente: aroma-pacifico-diagrams, flows/drone-fumigation-sequence.svg (detalle).
 
 **Diapositiva 33 (0:15). Tres máquinas de estado impiden fumigar sin evidencia**
 
-El caso, la orden y la misión son máquinas de estado. La orden no sale sin polígono ni registro de vuelo cerrado, y la fumigación sigue abierta hasta persistir la verificación.
+El caso, la orden y la misión son máquinas de estado. La orden no sale sin polígono ni registro de vuelo cerrado, y la fumigación no se cierra hasta persistir la verificación.
 
 Fuente: aroma-pacifico-diagrams, flows/drone-state-machines.svg.
 
@@ -365,7 +365,7 @@ Fuente: Plan de 100 horas, secciones 6.2, 6.4 y 6.5.
 
 *Transición: César cede la palabra a Esteban, que continúa en la diapositiva 53.*
 
-### Bloque 5: Esteban Gaviria Zambrano (SR1), diapositivas 53 a 60, 3:10
+### Bloque 5: Esteban Gaviria Zambrano (SR1), diapositivas 53 a 60, 3:20
 
 **Diapositiva 53 (0:30). El piloto cuesta USD 2.707 en un mes normal y USD 10.639 en cosecha**
 
@@ -406,17 +406,17 @@ Fuente: aroma-pacifico-design-system: tokens/contrast-report.md, docs/design-sys
 
 **Diapositiva 59 (0:20). Por qué esta propuesta**
 
-Por qué esta propuesta: funciona sin señal, gobierna los drones con autorización humana, entrega código que coincide con el diagrama dentro de las 100 horas y mantiene el costo bajo control desde el diseño hasta cada pull request. Gracias.
+Por qué esta propuesta: funciona sin señal, gobierna los drones con autorización humana, entrega código que coincide con el diagrama dentro de las 100 horas y mantiene el costo bajo control desde el diseño hasta cada pull request.
 
 Fuente: Síntesis de la propuesta.
 
-**Diapositiva 60 (0:10). Todo el proyecto, en un solo lugar**
+**Diapositiva 60 (0:20). Gracias**
 
-Dejamos el sitio del proyecto en el código QR. Recibimos sus preguntas; el anexo tiene cada diagrama completo y sus detalles.
+Gracias. El código QR lleva al sitio de Aroma Pacífico, con la arquitectura, cada diagrama en alta resolución, la IaC, los costos y el sistema de diseño. Recibimos sus preguntas; el anexo tiene cada diagrama completo y sus detalles.
 
 ## Anexo para preguntas
 
-Después del cierre y el código QR viene el anexo, que no se expone. Tiene cada diagrama publicado en vista completa, sin recortes, y sus vistas de detalle donde el texto del diagrama quedaría por debajo de unos 10 px a 1920 de ancho. Ante una pregunta, quien responde salta a la diapositiva de la tabla y vuelve al cierre al terminar. Las preguntas probables y sus respuestas están en [defense-qa.md](defense-qa.md).
+Después del cierre y el código QR viene el anexo, que no se expone. Tiene cada diagrama publicado en vista completa, sin recortes, y sus vistas de detalle donde el texto del diagrama quedaría por debajo de unos 10 px a 1920 de ancho. Cada diagrama, completo o en detalle, enlaza a su vista en alta resolución en el sitio del proyecto. Ante una pregunta, quien responde salta a la diapositiva de la tabla; al terminar las preguntas se pasa a la última diapositiva, que repite el cierre con el código QR. Las preguntas probables y sus respuestas están en [defense-qa.md](defense-qa.md).
 
 | Anexo | Diagrama | Fuente | Diapositivas |
 |---|---|---|---|

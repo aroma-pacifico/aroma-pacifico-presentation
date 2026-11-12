@@ -31,7 +31,7 @@ Usage:
     python3 deck/build_deck.py --team-photos <dir> --render
 
 Requirements: python-pptx, PyYAML and Pillow. --refresh-assets also needs
-Google Chrome or Chromium (headless SVG rendering) and segno (QR code).
+Google Chrome or Chromium (headless SVG rendering) and qrcode (QR code).
 --render needs LibreOffice (soffice) and pdftoppm (poppler-utils); it writes
 the PDF, one 1920-pixel PNG per slide and contact sheets of all slides.
 """
@@ -84,7 +84,11 @@ PX_PER_PT = PREVIEW_PX / SLIDE_W
 DIAGRAM_MAX_PX = (round(DIAGRAM_BOX[2] * PX_PER_PT * 2), round(DIAGRAM_BOX[3] * PX_PER_PT * 2))
 DIAGRAM_MASTER_SCALE = 3  # SVG units to pixels for the master render
 DIAGRAM_MASTER_PIXELS = 80e6  # cap for the largest diagrams (memory)
-LEGIBLE_PX = 10  # smallest comfortable body text at 1920 px
+LEGIBLE_PX = 10
+# The caption under a linked diagram: the token caption color and weight,
+# at the size that fits the 12 pt band under DIAGRAM_BOX.
+DIAGRAM_CAPTION = 9
+ARROW_FONT = "DejaVu Sans"  # smallest comfortable body text at 1920 px
 
 WARNINGS: list[str] = []
 NOTES: list[str] = []  # informational, do not fail the build
@@ -740,6 +744,29 @@ class Renderer:
         x, y, w, h = DIAGRAM_BOX
         px, py, pw, ph = picture(slide, path, x, y, w, h)
         self.placed.append((index, s["asset"], s.get("detail"), pw, ph))
+        # Every diagram opens its high-resolution view on the project
+        # website. The picture and its caption both carry the link, and
+        # LibreOffice keeps both as link annotations in the PDF.
+        url = f"{self.meta['website']}#diagrama/{diagram_slug(self.catalog[s['asset']])}"
+        slide.shapes[-1].click_action.hyperlink.address = url
+        cap = "Ver en alta resolución \u2197"
+        cs = DIAGRAM_CAPTION
+        cw = MEASURE.width(cap, cs, False) + 4
+        cy = min(py + ph + 1, SLIDE_H - cs * 1.3)
+        text(slide, px + pw - cw, cy, cw, cs * 1.3, [cap], t, cs, t.text_secondary,
+             align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.TOP)
+        caption = slide.shapes[-1]
+        caption.click_action.hyperlink.address = url
+        # Roboto has no arrow glyph and the fallback would pick a color emoji
+        # font, so the arrow is its own run in a text symbol font.
+        run = caption.text_frame.paragraphs[0].runs[0]
+        run.text = cap[:-1]
+        arrow = caption.text_frame.paragraphs[0].add_run()
+        arrow.text = cap[-1]
+        arrow.font.name = ARROW_FONT
+        arrow.font.size = run.font.size
+        arrow.font.color.rgb = rgb(t.text_secondary)
+        self.links += 1
 
     def cover(self, slide, s, index):
         t = self.t
@@ -826,17 +853,33 @@ class Renderer:
         picture(slide, ASSETS / "brand" / "logo-negative.png", t.margin, 64, 260, 82,
                 align="left")
         box(slide, t.margin, 178, 64, 4, fill=t.accent)
-        size = fit([s["title"]], 500, 120, t.size_display, 28, bold=True,
+        q = 372
+        qx, qy = SLIDE_W - t.margin - q + 16, (SLIDE_H - q) / 2
+        tw = qx - t.margin - 32
+        size = fit([s["title"]], tw, 110, t.size_display, 28, bold=True,
                    where=f"slide {index} qr title")
-        text(slide, t.margin, 196, 500, 120, [s["title"]], t, size, t.text_inverse, bold=True)
-        text(slide, t.margin, 324, 500, 60, [s["subtitle"]], t, t.size_body_large,
-             t.text_inverse)
-        text(slide, t.margin, 400, 520, 24, [s["url"]], t, t.size_body, t.accent, bold=True)
-        q = 300
-        qx, qy = SLIDE_W - t.margin - q, (SLIDE_H - q) / 2
+        text(slide, t.margin, 196, tw, 110, [s["title"]], t, size, t.text_inverse, bold=True)
+        ss = fit([s["subtitle"]], tw, 92, t.size_body_large, 14,
+                 where=f"slide {index} qr subtitle")
+        text(slide, t.margin, 306, tw, 92, [s["subtitle"]], t, ss, t.text_inverse)
+        us = fit([s["url"]], tw, 22, t.size_body, 12, bold=True,
+                 where=f"slide {index} qr url")
+        text(slide, t.margin, 410, tw, 22, [s["url"]], t, us, t.accent, bold=True)
+        slide.shapes[-1].click_action.hyperlink.address = self.meta["website"]
+        # The QR image carries its own white quiet zone, so the card is only
+        # the rounded frame around it.
         box(slide, qx, qy, q, q, fill="FFFFFF", radius=t.radius)
-        picture(slide, ASSETS / "images" / "qr-web.png", qx + 18, qy + 18, q - 36, q - 36)
+        picture(slide, ASSETS / "images" / "qr-web.png", qx + 6, qy + 6, q - 12, q - 12)
+        slide.shapes[-1].click_action.hyperlink.address = self.meta["website"]
         self.footer(slide, index, dark=True)
+
+
+def diagram_slug(spec: dict) -> str:
+    """Slug of a diagram on the project website: the stem of its file in
+    aroma-pacifico-web/assets/diagrams/, which is `<folder>-<name>` of the
+    source path unless the name already starts with the folder."""
+    folder, _, name = spec["src"].removesuffix(".svg").rpartition("/")
+    return spec.get("web") or (name if name.startswith(f"{folder}-") else f"{folder}-{name}")
 
 
 def diagram_image(key: str, detail: int | None) -> Path:
@@ -902,6 +945,8 @@ def build(content: dict, theme: Theme, out: Path):
     slides = expand(content)
     r = Renderer(theme, len(slides), content["meta"])
     r.placed = []
+    r.catalog = content["assets"]["diagrams"]
+    r.links = 0
     for i, s in enumerate(slides, start=1):
         slide = prs.slides.add_slide(blank)
         getattr(r, "team_slide" if s["kind"] == "team" else s["kind"])(slide, s, i)
@@ -909,6 +954,7 @@ def build(content: dict, theme: Theme, out: Path):
     prs.save(out)
     legibility_report(content, r.placed)
     write_script(content, slides, r)
+    NOTES.append(f"{r.links} diagram slides link to their high-resolution view")
     return len(slides)
 
 
@@ -954,7 +1000,10 @@ def write_script(content: dict, slides: list, r) -> None:
            f"| Issue | {script['issue']} |",
            f"| Presentación | `deck/{OUT_NAME}.pptx` y `.pdf`: {len(slides)} diapositivas, "
            f"{talk[0]['_index']} a {talk[-1]['_index']} de exposición y "
-           f"{annex[0]['_index']} a {annex[-1]['_index']} de anexo |",
+           f"{annex[0]['_index']} a {annex[-1]['_index']} de anexo"
+           + (f", y la {slides[-1]['_index']} repite el cierre con el código QR"
+              if slides[-1]["kind"] == "qr" and not slides[-1].get("presenter") else "")
+           + " |",
            f"| Duración | {clock(total)} de exposición, dentro de la meta de "
            f"{script['target']} |",
            "| Fuente | Generado por `deck/build_deck.py` desde `deck/content.yaml`; "
@@ -1162,12 +1211,44 @@ def legibility_report(content: dict, placed: list):
                       "by five or more labels)\n" + "\n".join(lines) + "\n", encoding="utf-8")
 
 
+QR_DARK = "#0a3a41"  # brand primary, 12.4:1 on white
+
+
 def make_qr(url: str, out: Path):
+    """The website QR: error correction H, brand primary on white, with the
+    standard four-module quiet zone. It is decoded back before it is kept."""
     try:
-        import segno
+        import qrcode
+        from qrcode.constants import ERROR_CORRECT_H
     except ImportError:
-        sys.exit("ERROR: --refresh-assets needs segno for the QR code (pip install segno)")
-    segno.make(url, error="m").save(str(out), scale=20, border=0, dark="#0a3a41")
+        sys.exit("ERROR: the QR code needs the qrcode package (pip install 'qrcode[pil]')")
+    qr = qrcode.QRCode(error_correction=ERROR_CORRECT_H, box_size=24, border=4)
+    qr.add_data(url)
+    qr.make(fit=True)
+    qr.make_image(fill_color=QR_DARK, back_color="white").convert("RGB").save(out, optimize=True)
+    decoded = decode_qr(out)
+    if decoded is not None and decoded != url:
+        sys.exit(f"ERROR: the QR code decodes to {decoded!r}, not {url!r}")
+
+
+def decode_qr(path: Path) -> str | None:
+    """Decode a QR image with zbar (pyzbar) or, without zbar, with zxing-cpp.
+    Returns None when no decoder is installed."""
+    with Image.open(path) as im:
+        im = im.convert("L")
+        try:
+            from pyzbar import pyzbar
+            found = pyzbar.decode(im)
+            return found[0].data.decode() if found else ""
+        except ImportError:
+            pass
+        try:
+            import zxingcpp
+            found = zxingcpp.read_barcodes(im)
+            return found[0].text if found else ""
+        except ImportError:
+            NOTES.append("QR not decoded: install pyzbar (with zbar) or zxing-cpp")
+            return None
 
 
 def crop_save(src: Path, out: Path, crop, max_w: int):
@@ -1369,6 +1450,8 @@ def main():
     theme = Theme(Tokens(ASSETS / "tokens.json"), args.font)
     global MEASURE
     MEASURE = Measurer(theme.font)
+    if not (ASSETS / "images" / "qr-web.png").exists():
+        make_qr(content["meta"]["website"], ASSETS / "images" / "qr-web.png")
     count = build(content, theme, args.out)
     print(f"Built {args.out} with {count} slides, font {theme.font} "
           f"(fallback chain: {', '.join(theme.families[1:])})")
