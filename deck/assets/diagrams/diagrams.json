@@ -1,0 +1,156 @@
+{
+  "architecture": {
+    "svg_units": [
+      2924.0,
+      2409.0
+    ],
+    "body_px": 13.0
+  },
+  "architecture-iac": {
+    "svg_units": [
+      2933.0,
+      1157.0
+    ],
+    "body_px": 18.0
+  },
+  "landing-zone": {
+    "svg_units": [
+      2373.0,
+      2207.0
+    ],
+    "body_px": 12.0
+  },
+  "legacy-2020": {
+    "svg_units": [
+      3153.0,
+      2527.0
+    ],
+    "body_px": 11.0
+  },
+  "addressing-plan": {
+    "svg_units": [
+      2753.0,
+      2026.0
+    ],
+    "body_px": 11.5
+  },
+  "connectivity": {
+    "svg_units": [
+      3653.0,
+      2272.0
+    ],
+    "body_px": 11.0
+  },
+  "no-signal-sequence": {
+    "svg_units": [
+      3746.0,
+      2277.0
+    ],
+    "body_px": 12.0
+  },
+  "collection-center": {
+    "svg_units": [
+      2394.0,
+      1621.0
+    ],
+    "body_px": 15.0
+  },
+  "firewall-policy": {
+    "svg_units": [
+      2693.0,
+      1603.0
+    ],
+    "body_px": 9.5
+  },
+  "identity-and-access": {
+    "svg_units": [
+      3413.0,
+      1782.0
+    ],
+    "body_px": 11.0
+  },
+  "revocation-sequence": {
+    "svg_units": [
+      3713.0,
+      2657.0
+    ],
+    "body_px": 11.5
+  },
+  "farm-monitoring-sequence": {
+    "svg_units": [
+      3154.0,
+      3027.0
+    ],
+    "body_px": 12.0
+  },
+  "drone-fumigation-sequence": {
+    "svg_units": [
+      4247.0,
+      5262.0
+    ],
+    "body_px": 12.0
+  },
+  "drone-state-machines": {
+    "svg_units": [
+      4132.0,
+      1607.0
+    ],
+    "body_px": 11.0
+  },
+  "inference-functions": {
+    "svg_units": [
+      2753.0,
+      2332.0
+    ],
+    "body_px": 10.0
+  },
+  "sack-and-trip-sequence": {
+    "svg_units": [
+      3453.0,
+      3757.0
+    ],
+    "body_px": 11.5
+  },
+  "sack-states": {
+    "svg_units": [
+      3333.0,
+      1442.0
+    ],
+    "body_px": 12.0
+  },
+  "telemetry": {
+    "svg_units": [
+      2883.0,
+      972.0
+    ],
+    "body_px": 16.0
+  },
+  "transporter-position": {
+    "svg_units": [
+      2822.0,
+      912.0
+    ],
+    "body_px": 16.0
+  },
+  "drone-objects": {
+    "svg_units": [
+      2893.0,
+      1222.0
+    ],
+    "body_px": 14.0
+  },
+  "ingestion-and-flight-objects": {
+    "svg_units": [
+      2613.0,
+      1292.0
+    ],
+    "body_px": 11.0
+  },
+  "platform-pipeline": {
+    "svg_units": [
+      2613.0,
+      1152.0
+    ],
+    "body_px": 13.0
+  }
+}

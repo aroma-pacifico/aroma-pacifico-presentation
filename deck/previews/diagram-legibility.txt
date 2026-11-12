@@ -1,0 +1,92 @@
+Body text height of each diagram view at 1920 px (smallest font used by five or more labels)
+   7  legacy-2020                                   4.1 px  FULL VIEW, SEE DETAIL VIEWS
+  11  architecture                                  5.1 px  FULL VIEW, SEE DETAIL VIEWS
+  12  architecture detail 1                        16.0 px  OK
+  13  architecture detail 4                        10.4 px  OK
+  15  landing-zone                                  5.2 px  FULL VIEW, SEE DETAIL VIEWS
+  17  addressing-plan                               5.4 px  FULL VIEW, SEE DETAIL VIEWS
+  18  connectivity                                  4.6 px  FULL VIEW, SEE DETAIL VIEWS
+  20  no-signal-sequence                            5.0 px  FULL VIEW, SEE DETAIL VIEWS
+  22  collection-center                             8.8 px  FULL VIEW, SEE DETAIL VIEWS
+  24  firewall-policy                               5.6 px  FULL VIEW, SEE DETAIL VIEWS
+  26  identity-and-access                           5.9 px  FULL VIEW, SEE DETAIL VIEWS
+  27  revocation-sequence                           4.1 px  FULL VIEW, SEE DETAIL VIEWS
+  29  farm-monitoring-sequence                      3.7 px  FULL VIEW, SEE DETAIL VIEWS
+  31  drone-fumigation-sequence                     2.2 px  FULL VIEW, SEE DETAIL VIEWS
+  32  drone-fumigation-sequence detail 1           19.6 px  OK
+  33  drone-state-machines                          5.0 px  FULL VIEW, SEE DETAIL VIEWS
+  36  inference-functions                           4.1 px  FULL VIEW, SEE DETAIL VIEWS
+  38  sack-and-trip-sequence                        2.9 px  FULL VIEW, SEE DETAIL VIEWS
+  39  sack-states                                   6.7 px  FULL VIEW, SEE DETAIL VIEWS
+  41  ingestion-and-flight-objects                  7.9 px  FULL VIEW, SEE DETAIL VIEWS
+  44  architecture-iac                             11.5 px  OK
+  57  platform-pipeline                             9.3 px  FULL VIEW, SEE DETAIL VIEWS
+  61  architecture                                  5.1 px  FULL VIEW, SEE DETAIL VIEWS
+  62  architecture detail 1                        16.0 px  OK
+  63  architecture detail 2                        17.0 px  OK
+  64  architecture detail 3                        10.4 px  OK
+  65  architecture detail 4                        10.4 px  OK
+  66  architecture detail 5                        15.1 px  OK
+  67  architecture detail 6                        15.1 px  OK
+  68  architecture-iac                             11.5 px  OK
+  69  landing-zone                                  5.2 px  FULL VIEW, SEE DETAIL VIEWS
+  70  landing-zone detail 1                         9.5 px  ABOUT 10 PX
+  71  landing-zone detail 2                         9.5 px  ABOUT 10 PX
+  72  landing-zone detail 3                         9.5 px  ABOUT 10 PX
+  73  legacy-2020                                   4.1 px  FULL VIEW, SEE DETAIL VIEWS
+  74  legacy-2020 detail 1                         10.3 px  OK
+  75  legacy-2020 detail 2                         11.3 px  OK
+  76  legacy-2020 detail 3                         11.3 px  OK
+  77  addressing-plan                               5.4 px  FULL VIEW, SEE DETAIL VIEWS
+  78  addressing-plan detail 1                      9.6 px  ABOUT 10 PX
+  79  addressing-plan detail 2                     12.5 px  OK
+  80  connectivity                                  4.6 px  FULL VIEW, SEE DETAIL VIEWS
+  81  connectivity detail 1                        10.1 px  OK
+  82  connectivity detail 2                        10.9 px  OK
+  83  no-signal-sequence                            5.0 px  FULL VIEW, SEE DETAIL VIEWS
+  84  no-signal-sequence detail 1                  11.8 px  OK
+  85  no-signal-sequence detail 2                  11.8 px  OK
+  86  collection-center                             8.8 px  FULL VIEW, SEE DETAIL VIEWS
+  87  collection-center detail 1                   16.2 px  OK
+  88  collection-center detail 2                   16.8 px  OK
+  89  firewall-policy                               5.6 px  FULL VIEW, SEE DETAIL VIEWS
+  90  firewall-policy detail 1                     11.2 px  OK
+  91  firewall-policy detail 2                     10.7 px  OK
+  92  identity-and-access                           5.9 px  FULL VIEW, SEE DETAIL VIEWS
+  93  identity-and-access detail 1                 10.1 px  OK
+  94  identity-and-access detail 2                 11.2 px  OK
+  95  revocation-sequence                           4.1 px  FULL VIEW, SEE DETAIL VIEWS
+  96  revocation-sequence detail 1                 11.6 px  OK
+  97  revocation-sequence detail 2                  9.4 px  ABOUT 10 PX
+  98  farm-monitoring-sequence                      3.7 px  FULL VIEW, SEE DETAIL VIEWS
+  99  farm-monitoring-sequence detail 1             9.6 px  ABOUT 10 PX
+ 100  farm-monitoring-sequence detail 2             9.1 px  ABOUT 10 PX
+ 101  drone-fumigation-sequence                     2.2 px  FULL VIEW, SEE DETAIL VIEWS
+ 102  drone-fumigation-sequence detail 1           19.6 px  OK
+ 103  drone-fumigation-sequence detail 2           10.8 px  OK
+ 104  drone-state-machines                          5.0 px  FULL VIEW, SEE DETAIL VIEWS
+ 105  drone-state-machines detail 1                10.3 px  OK
+ 106  drone-state-machines detail 2                10.3 px  OK
+ 107  drone-state-machines detail 3                10.3 px  OK
+ 108  inference-functions                           4.1 px  FULL VIEW, SEE DETAIL VIEWS
+ 109  inference-functions detail 1                 11.2 px  OK
+ 110  inference-functions detail 2                 11.2 px  OK
+ 111  sack-and-trip-sequence                        2.9 px  FULL VIEW, SEE DETAIL VIEWS
+ 112  sack-and-trip-sequence detail 1              10.1 px  OK
+ 113  sack-and-trip-sequence detail 2              10.4 px  OK
+ 114  sack-states                                   6.7 px  FULL VIEW, SEE DETAIL VIEWS
+ 115  sack-states detail 1                         10.9 px  OK
+ 116  sack-states detail 2                         10.9 px  OK
+ 117  telemetry                                    10.4 px  OK
+ 118  transporter-position                         10.6 px  OK
+ 119  drone-objects                                 9.1 px  FULL VIEW, SEE DETAIL VIEWS
+ 120  drone-objects detail 1                       10.8 px  OK
+ 121  drone-objects detail 2                       10.8 px  OK
+ 122  ingestion-and-flight-objects                  7.9 px  FULL VIEW, SEE DETAIL VIEWS
+ 123  ingestion-and-flight-objects detail 1        15.2 px  OK
+ 124  ingestion-and-flight-objects detail 2        15.2 px  OK
+ 125  ingestion-and-flight-objects detail 3        15.2 px  OK
+ 126  ingestion-and-flight-objects detail 4        15.2 px  OK
+ 127  platform-pipeline                             9.3 px  FULL VIEW, SEE DETAIL VIEWS
+ 128  platform-pipeline detail 1                   11.6 px  OK
+ 129  platform-pipeline detail 2                   11.6 px  OK
