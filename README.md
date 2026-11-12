@@ -16,7 +16,7 @@ This repository holds the slide decks, demonstration walkthroughs, speaker notes
 
 | Path | Purpose |
 |---|---|
-| `deck/aroma-pacifico-sustentacion.pptx` | The proposal deck in Spanish, 16:9: 60 narrative slides and an annex with every diagram in full and in detail, with Spanish speaker notes that name the presenter, the target time and the source |
+| `deck/aroma-pacifico-sustentacion.pptx` | The proposal deck in Spanish, 16:9: 60 narrative slides that end with the closing QR slide, an annex with every diagram in full and in detail, and the closing QR slide repeated as the last slide; every diagram links to its high-resolution view on the project website, and the Spanish speaker notes name the presenter, the target time and the source |
 | `deck/aroma-pacifico-sustentacion.pdf` | PDF export of the same deck, with Roboto embedded; the safe copy to project |
 | `deck/content.yaml` | Slide text, speaker notes, the frame of the guion, the diagram catalog with its detail regions, and the team; edit this to change the deck |
 | `deck/build_deck.py` | Generator: reads the design tokens and `content.yaml` and writes the PPTX, the guion, the PDF, the previews and the contact sheets |
@@ -53,7 +53,7 @@ aroma-pacifico-presentation/
 
 ## The slide file
 
-The deck is a complete project proposal, described in `docs/final-presentation.md` and built on the Aroma Pacífico design system (`aroma-pacifico-design-system`): colors, font family, sizes, spacing and radius come from `tokens/tokens.json`, the marks from `brand/` and the icons from `icons/`. Text and background pairs are taken from `tokens/contrast-report.md`. Diagrams come from the merged SVG exports of `aroma-pacifico-diagrams`: each is shown whole, fitted into 85 percent of the slide, and the annex adds zoomed detail slides wherever its text would be under about 10 px at 1920 px. Chrome is limited to the isotype and the slide number. The cover and the team slide show the four presenters with their names and roles; who presents each slide appears only in the speaker notes and the guion. Names, roles and presentation order live once, under `meta.team` in `deck/content.yaml`.
+The deck is a complete project proposal, described in `docs/final-presentation.md` and built on the Aroma Pacífico design system (`aroma-pacifico-design-system`): colors, font family, sizes, spacing and radius come from `tokens/tokens.json`, the marks from `brand/` and the icons from `icons/`. Text and background pairs are taken from `tokens/contrast-report.md`. Diagrams come from the merged SVG exports of `aroma-pacifico-diagrams`: each is shown whole, fitted into 85 percent of the slide, and the annex adds zoomed detail slides wherever its text would be under about 10 px at 1920 px. Each diagram picture and its caption "Ver en alta resolución" link to `https://aroma-pacifico.github.io/aroma-pacifico-web/#diagrama/<slug>`, where the slug is the file stem in `aroma-pacifico-web/assets/diagrams/`. Chrome is limited to the isotype and the slide number. The cover and the team slide show the four presenters with their names and roles; who presents each slide appears only in the speaker notes and the guion. Names, roles and presentation order live once, under `meta.team` in `deck/content.yaml`.
 
 **Opening it.** Open the PPTX in PowerPoint, Keynote, Google Slides or LibreOffice Impress; the speaker notes carry the presenter, the target time, the source and the script of each slide, the same text as `docs/guion-sustentacion.md`. To project without font risk, use the PDF.
 
@@ -61,7 +61,7 @@ The deck is a complete project proposal, described in `docs/final-presentation.m
 
 **Editing.** Change text and notes in `deck/content.yaml`, never in PowerPoint and never in the guion, so the next build keeps the edit. The target time of a slide is its notes read at 130 words per minute, and the build warns when the talk leaves the 20 to 25 minute target.
 
-**Regenerating.** The build needs Python 3 with `python-pptx`, `PyYAML`, `Pillow` and `segno` (`pip install --user python-pptx pyyaml pillow segno`). Rendering the PDF and previews also needs LibreOffice and `pdftoppm` (poppler-utils), with Roboto installed where LibreOffice can see it.
+**Regenerating.** The build needs Python 3 with `python-pptx`, `PyYAML`, `Pillow` and `qrcode` (`pip install --user python-pptx pyyaml pillow 'qrcode[pil]'`). The QR code is decoded back when it is generated, with `pyzbar` where the zbar library is installed or with `zxing-cpp` otherwise. Rendering the PDF and previews also needs LibreOffice and `pdftoppm` (poppler-utils), with Roboto installed where LibreOffice can see it.
 
 ```bash
 python3 deck/build_deck.py             # PPTX and docs/guion-sustentacion.md
