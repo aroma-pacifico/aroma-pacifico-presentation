@@ -4,8 +4,8 @@
 |---|---|
 | Estado | Guion de ensayo. El tiempo de cada diapositiva es su texto leído a 130 palabras por minuto; el ensayo completo lo confirma. |
 | Issue | aroma-pacifico/aroma-pacifico-roadmap#38 (A25) |
-| Presentación | `deck/aroma-pacifico-sustentacion.pptx` y `.pdf`: 130 diapositivas, 1 a 60 de exposición y 61 a 129 de anexo, y la 130 repite el cierre con el código QR |
-| Duración | 24:10 de exposición, dentro de la meta de 20 a 25 minutos |
+| Presentación | `deck/aroma-pacifico-sustentacion.pptx` y `.pdf`: 136 diapositivas, 1 a 63 de exposición y 64 a 135 de anexo, y la 136 repite el cierre con el código QR |
+| Duración | 24:40 de exposición, dentro de la meta de 20 a 25 minutos |
 | Fuente | Generado por `deck/build_deck.py` desde `deck/content.yaml`; las notas del orador del PPTX tienen el mismo texto. No se edita a mano. |
 
 El guion está escrito para decirse en voz alta, en frases cortas, a unas 130 palabras por minuto. Cada presentador adapta la redacción; las cifras y las referencias son la parte fija. Toda cifra es del enunciado del caso, aritmética sobre una de ellas o una meta de diseño: se dice «meta de diseño» y nunca «medido». La fuente de cada diapositiva queda al final de su texto y en las notas del orador, no en la diapositiva.
@@ -19,9 +19,9 @@ En la portada, Esteban lee el título y pasa a la diapositiva del equipo, donde 
 | 1 | Esteban Gaviria Zambrano (SR1) | 1 a 15 | 6:55 |
 | 2 | Karen Valeria Jurado Calpa (JR1) | 16 a 27 | 4:35 |
 | 3 | Jeanpaul Atkinson Vidales Gallego (SR2) | 28 a 42 | 5:05 |
-| 4 | César Augusto Jiménez Reina (JR2) | 43 a 52 | 4:15 |
-| 5 | Esteban Gaviria Zambrano (SR1) | 53 a 60 | 3:20 |
-| Total | SR1 10:15, JR1 4:35, SR2 5:05, JR2 4:15 | 1 a 60 | 24:10 |
+| 4 | César Augusto Jiménez Reina (JR2) | 43 a 55 | 4:45 |
+| 5 | Esteban Gaviria Zambrano (SR1) | 56 a 63 | 3:20 |
+| Total | SR1 10:15, JR1 4:35, SR2 5:05, JR2 4:45 | 1 a 63 | 24:40 |
 
 ## Guion por diapositiva
 
@@ -300,7 +300,7 @@ Fuente: Observabilidad, secciones 2 a 6 · docs/dashboards.
 
 *Transición: Jeanpaul cede la palabra a César, que continúa en la diapositiva 43.*
 
-### Bloque 4: César Augusto Jiménez Reina (JR2), diapositivas 43 a 52, 4:15
+### Bloque 4: César Augusto Jiménez Reina (JR2), diapositivas 43 a 55, 4:45
 
 **Diapositiva 43 (0:30). La IaC cabe en 100 horas porque construye un ambiente patrón y nada más**
 
@@ -339,78 +339,96 @@ Así entra un cambio. El pull request pasa el escaneo de secretos, las compuerta
 
 Fuente: aroma-pacifico-infrastructure: infrastructure-ci.yml, floci-plan.yml, infracost.yml, pr-conventions.yml · pc-iac-027 · pc-iac-028.
 
-**Diapositiva 49 (0:30). Subir la infraestructura: producción aplica solo el plan revisado y aprobado**
+**Diapositiva 49 (0:10). CI de la IaC: del pull request al plan revisado y la etiqueta**
+
+La secuencia muestra los mismos pasos con sus actores.
+
+Fuente: aroma-pacifico-diagrams, pipelines/iac-ci-sequence.svg.
+
+**Diapositiva 50 (0:30). Subir la infraestructura: producción aplica solo el plan revisado y aprobado**
 
 Subir la infraestructura sigue la promoción dev, qa y pdn. Cada merge planifica dev y qa con su costo. Para producción, una primera ejecución publica el plan, el delta de costo y la huella del plan; otra persona de la lista de aprobadores aprueba exactamente esa huella. El pipeline rechaza la ventana de cosecha salvo un incidente, y solo se aplica el plan aprobado. Todo queda registrado.
 
 Fuente: aroma-pacifico-infrastructure: cd-promotion.yml, cd-plan.yml, docs/cd-pipeline.md, secciones 2 a 5.
 
-**Diapositiva 50 (0:25). Bajar y volver atrás también pasa por un plan revisado**
+**Diapositiva 51 (0:10). Subir la infraestructura, stack por stack y con aprobación**
+
+La secuencia muestra la promoción con sus actores y la aprobación con evidencia.
+
+Fuente: aroma-pacifico-diagrams, pipelines/iac-provisioning-sequence.svg.
+
+**Diapositiva 52 (0:25). Bajar y volver atrás también pasa por un plan revisado**
 
 Volver atrás es un revert por pull request y una nueva promoción: el plan revisado muestra el cambio inverso. Bajar un ambiente va en el orden inverso de los stacks, y el aprobador lee primero las destrucciones. Las tablas con datos tienen prevent_destroy, así que un plan que las reemplace falla, y el estado se recupera del bucket versionado.
 
 Fuente: aroma-pacifico-infrastructure, docs/cd-pipeline.md, secciones 3 y 7 · Automatización y pipelines, secciones 5 y 10.
 
-**Diapositiva 51 (0:20). 98 horas en 19 partes, repartidas por rol y por semana**
+**Diapositiva 53 (0:10). Bajar la infraestructura y volver atrás, con la misma compuerta**
+
+La secuencia muestra el revert, la baja controlada y las guardas de retención.
+
+Fuente: aroma-pacifico-diagrams, pipelines/iac-teardown-and-rollback-sequence.svg.
+
+**Diapositiva 54 (0:20). 98 horas en 19 partes, repartidas por rol y por semana**
 
 El plan reparte 98 horas en 19 partes. SR1 lleva 27, SR2 26, JR1 22 y JR2 23. Seis tareas se dividen en módulo y cableado, ninguna pasa de 10 horas y nadie pasa de 25 por semana ni de 5 por día. Quedan 2 horas de reserva.
 
 Fuente: Plan de 100 horas, secciones 4.1 y 6.5.
 
-**Diapositiva 52 (0:30). La ruta crítica dura 38 horas y termina el día 8 de 10**
+**Diapositiva 55 (0:30). La ruta crítica dura 38 horas y termina el día 8 de 10**
 
 La ruta crítica tiene dos cadenas de 38 horas que comparten B01, B06a, B03 y B04b; una sigue por B09b, B07b y B12, y la otra por B08 y B05, y ambas cierran en B13. El plan termina en la hora 38 de 50, el día 8, con 12 horas de colchón, y usa el 49 por ciento de la capacidad. Esteban cierra con los costos.
 
 Fuente: Plan de 100 horas, secciones 6.2, 6.4 y 6.5.
 
-*Transición: César cede la palabra a Esteban, que continúa en la diapositiva 53.*
+*Transición: César cede la palabra a Esteban, que continúa en la diapositiva 56.*
 
-### Bloque 5: Esteban Gaviria Zambrano (SR1), diapositivas 53 a 60, 3:20
+### Bloque 5: Esteban Gaviria Zambrano (SR1), diapositivas 56 a 63, 3:20
 
-**Diapositiva 53 (0:30). El piloto cuesta USD 2.707 en un mes normal y USD 10.639 en cosecha**
+**Diapositiva 56 (0:30). El piloto cuesta USD 2.707 en un mes normal y USD 10.639 en cosecha**
 
 El piloto cuesta 2.707 dólares en un mes normal y 10.639 en un mes de cosecha, con 82.550 de inversión inicial. La nube es la parte menor: 559 y 574 dólares, bajo los topes de 650 y 700. Cada finca cuesta 370 dólares de hardware una vez y 4,60 al mes, y la inferencia de un mes de cosecha, 5,21.
 
 Fuente: Costos del piloto, secciones 1, 3, 5, 6 y 7 · ASM-230, ASM-231, ASM-250.
 
-**Diapositiva 54 (0:25). La cosecha la encarece el dron, no la nube: AWS sube solo USD 14,81**
+**Diapositiva 57 (0:25). La cosecha la encarece el dron, no la nube: AWS sube solo USD 14,81**
 
 A la izquierda, el costo por dominio: lo que dispara la cosecha es la campaña de dron, que pasa de 583 a 8.500 dólares. A la derecha, la nube por servicio: pesa la red privada, con el resolver, el Transit Gateway y las VPN. La cosecha solo sube la nube 14,81 dólares, por los SMS y la inferencia.
 
 Fuente: Costos del piloto, secciones 1, 3.2 y 7.1 · ASM-230 a ASM-237.
 
-**Diapositiva 55 (0:35). Seis decisiones ahorran USD 47.533 al año y evitan USD 230.000 de inversión**
+**Diapositiva 58 (0:35). Seis decisiones ahorran USD 47.533 al año y evitan USD 230.000 de inversión**
 
 Seis decisiones bajan el costo: endpoints en vez de Network Firewall y NAT, CloudFront en vez de un balanceador, el modelo solo al abrir una alerta, hardware dual con satélite solo sin señal, drones contratados y DynamoDB bajo demanda. Suman 47.533 dólares al año y 230.000 de inversión evitada.
 Y el costo no se descuida después: Infracost publica el costo antes, después y la diferencia en cada pull request y en la aprobación de producción.
 
 Fuente: Costos del piloto, secciones 1, 2 y 9 · ASM-251 · pc-iac-027.
 
-**Diapositiva 56 (0:30). Cada cambio se aprueba, se avisa y se puede volver atrás**
+**Diapositiva 59 (0:30). Cada cambio se aprueba, se avisa y se puede volver atrás**
 
 El cambio es controlado: un mismo candidato pasa por dev, qa y pdn, y producción aplica solo lo revisado, nunca en el día de una semana de cosecha salvo un incidente. Las dos plantillas de notas de versión dicen qué cambia, la ventana, el impacto, la aprobación, el aviso a la Federación y cómo volver atrás, cada una con su ejemplo.
 
 Fuente: Automatización y pipelines, secciones 3 a 5 y 10 · Notas de versión · pipelines/platform-pipeline.svg.
 
-**Diapositiva 57 (0:10). Un candidato, tres ambientes y salvaguardas en producción**
+**Diapositiva 60 (0:10). Un candidato, tres ambientes y salvaguardas en producción**
 
 El pipeline de la plataforma: un candidato inmutable que se promueve con compuertas, despliegue canario de funciones y alarmas de vuelta atrás.
 
 Fuente: aroma-pacifico-diagrams, pipelines/platform-pipeline.svg.
 
-**Diapositiva 58 (0:30). Un sistema de diseño propio para las tres apps, legible a pleno sol**
+**Diapositiva 61 (0:30). Un sistema de diseño propio para las tres apps, legible a pleno sol**
 
 El sistema de diseño es propio, como pide el caso: marca, paleta con los estados del saco y la alerta, tipografía para teléfono y web, y componentes base. El contraste es de 7 a 1 en los 48 pares de color, las áreas táctiles son de 48 y 56 píxeles y la consulta pública no muestra datos personales. Esta misma presentación usa sus tokens.
 
 Fuente: aroma-pacifico-design-system: tokens/contrast-report.md, docs/design-system.md, previews/.
 
-**Diapositiva 59 (0:20). Por qué esta propuesta**
+**Diapositiva 62 (0:20). Por qué esta propuesta**
 
 Por qué esta propuesta: funciona sin señal, gobierna los drones con autorización humana, entrega código que coincide con el diagrama dentro de las 100 horas y mantiene el costo bajo control desde el diseño hasta cada pull request.
 
 Fuente: Síntesis de la propuesta.
 
-**Diapositiva 60 (0:20). Gracias**
+**Diapositiva 63 (0:20). Gracias**
 
 Gracias. El código QR lleva al sitio de Aroma Pacífico, con la arquitectura, cada diagrama en alta resolución, la IaC, los costos y el sistema de diseño. Recibimos sus preguntas; el anexo tiene cada diagrama completo y sus detalles.
 
@@ -420,25 +438,28 @@ Después del cierre y el código QR viene el anexo, que no se expone. Tiene cada
 
 | Anexo | Diagrama | Fuente | Diapositivas |
 |---|---|---|---|
-| A01 | Arquitectura completa del piloto | `complete/architecture.svg` | 61 a 67 |
-| A02 | Trazabilidad de la IaC: cajas D01 a D13 | `complete/architecture-iac.svg` | 68 |
-| A03 | Zona de aterrizaje, gobierno y auditoría | `accounts/landing-zone.svg` | 69 a 72 |
-| A04 | Piloto de 2020: qué se conserva, reemplaza y retira | `legacy/legacy-2020.svg` | 73 a 76 |
-| A05 | Plan de direccionamiento de la nube y de los sitios | `network/addressing-plan.svg` | 77 a 79 |
-| A06 | Conectividad de extremo a extremo | `network/connectivity.svg` | 80 a 82 |
-| A07 | Sin señal: búfer, reconexión y latencia de la alerta | `network/no-signal-sequence.svg` | 83 a 85 |
-| A08 | Patrón de red del centro de acopio | `network/collection-center.svg` | 86 a 88 |
-| A09 | Política de firewall perimetral y de nube | `security/firewall-policy.svg` | 89 a 91 |
-| A10 | Identidades, roles, puertas de entrada y llaves KMS | `security/identity-and-access.svg` | 92 a 94 |
-| A11 | Autenticación, MFA escalonado y revocación | `security/revocation-sequence.svg` | 95 a 97 |
-| A12 | Monitoreo de finca y alerta al caficultor | `flows/farm-monitoring-sequence.svg` | 98 a 100 |
-| A13 | Servicio de drones: de la alerta a la fumigación cerrada | `flows/drone-fumigation-sequence.svg` | 101 a 103 |
-| A14 | Máquinas de estado del caso, la orden y la misión | `flows/drone-state-machines.svg` | 104 a 107 |
-| A15 | Funciones de inferencia dirigidas por eventos | `flows/inference-functions.svg` | 108 a 110 |
-| A16 | Saco, viaje y consulta del comprador | `flows/sack-and-trip-sequence.svg` | 111 a 113 |
-| A17 | Estados del saco | `flows/sack-states.svg` | 114 a 116 |
-| A18 | Camino de datos de la telemetría de finca | `data-paths/telemetry.svg` | 117 |
-| A19 | Camino de datos de la posición del transportador | `data-paths/transporter-position.svg` | 118 |
-| A20 | Camino de datos de los objetos del dron | `data-paths/drone-objects.svg` | 119 a 121 |
-| A21 | Pipelines de ingesta y de objetos de vuelo | `pipelines/ingestion-and-flight-objects.svg` | 122 a 126 |
-| A22 | Pipeline de la plataforma y modelo de versiones | `pipelines/platform-pipeline.svg` | 127 a 129 |
+| A01 | Arquitectura completa del piloto | `complete/architecture.svg` | 64 a 70 |
+| A02 | Trazabilidad de la IaC: cajas D01 a D13 | `complete/architecture-iac.svg` | 71 |
+| A03 | Zona de aterrizaje, gobierno y auditoría | `accounts/landing-zone.svg` | 72 a 75 |
+| A04 | Piloto de 2020: qué se conserva, reemplaza y retira | `legacy/legacy-2020.svg` | 76 a 79 |
+| A05 | Plan de direccionamiento de la nube y de los sitios | `network/addressing-plan.svg` | 80 a 82 |
+| A06 | Conectividad de extremo a extremo | `network/connectivity.svg` | 83 a 85 |
+| A07 | Sin señal: búfer, reconexión y latencia de la alerta | `network/no-signal-sequence.svg` | 86 a 88 |
+| A08 | Patrón de red del centro de acopio | `network/collection-center.svg` | 89 a 91 |
+| A09 | Política de firewall perimetral y de nube | `security/firewall-policy.svg` | 92 a 94 |
+| A10 | Identidades, roles, puertas de entrada y llaves KMS | `security/identity-and-access.svg` | 95 a 97 |
+| A11 | Autenticación, MFA escalonado y revocación | `security/revocation-sequence.svg` | 98 a 100 |
+| A12 | Monitoreo de finca y alerta al caficultor | `flows/farm-monitoring-sequence.svg` | 101 a 103 |
+| A13 | Servicio de drones: de la alerta a la fumigación cerrada | `flows/drone-fumigation-sequence.svg` | 104 a 106 |
+| A14 | Máquinas de estado del caso, la orden y la misión | `flows/drone-state-machines.svg` | 107 a 110 |
+| A15 | Funciones de inferencia dirigidas por eventos | `flows/inference-functions.svg` | 111 a 113 |
+| A16 | Saco, viaje y consulta del comprador | `flows/sack-and-trip-sequence.svg` | 114 a 116 |
+| A17 | Estados del saco | `flows/sack-states.svg` | 117 a 119 |
+| A18 | Camino de datos de la telemetría de finca | `data-paths/telemetry.svg` | 120 |
+| A19 | Camino de datos de la posición del transportador | `data-paths/transporter-position.svg` | 121 |
+| A20 | Camino de datos de los objetos del dron | `data-paths/drone-objects.svg` | 122 a 124 |
+| A21 | Pipelines de ingesta y de objetos de vuelo | `pipelines/ingestion-and-flight-objects.svg` | 125 a 129 |
+| A22 | Pipeline de la plataforma y modelo de versiones | `pipelines/platform-pipeline.svg` | 130 a 132 |
+| A23 | CI de la IaC: del pull request al plan | `pipelines/iac-ci-sequence.svg` | 133 |
+| A24 | CD de la IaC: subir la infraestructura con aprobación | `pipelines/iac-provisioning-sequence.svg` | 134 |
+| A25 | Bajar la infraestructura y volver atrás | `pipelines/iac-teardown-and-rollback-sequence.svg` | 135 |
