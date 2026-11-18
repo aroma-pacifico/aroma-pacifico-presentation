@@ -67,8 +67,8 @@ SLIDE_W, SLIDE_H = 960.0, 540.0  # points, 16:9 (13.333 x 7.5 in)
 BRAND_FILES = ["logo", "logo-negative", "isotype", "isotype-negative"]
 LINE_HEIGHT = 1.3  # layout line height in em; covers Roboto and Arial metrics
 PORTRAIT_RATIO = 3 / 4  # width / height of the team portraits
-PORTRAIT_FACE = 0.25  # eye-to-chin distance as a share of the portrait height
-PORTRAIT_EYES = 0.31  # eye line as a share of the portrait height, from the top
+PORTRAIT_FACE = 0.30  # eye-to-chin distance as a share of the portrait height
+PORTRAIT_EYES = 0.365  # eye line as a share of the portrait height, from the top
 PORTRAIT_MAX_H = 900  # pixels
 
 # Diagram slides: a slim title band, then a content box of at least 85 % of
@@ -87,7 +87,7 @@ DIAGRAM_MASTER_PIXELS = 80e6  # cap for the largest diagrams (memory)
 LEGIBLE_PX = 10
 # The caption under a linked diagram: the token caption color and weight,
 # at the size that fits the 12 pt band under DIAGRAM_BOX.
-DIAGRAM_CAPTION = 9
+DIAGRAM_CAPTION = 11
 ARROW_FONT = "DejaVu Sans"  # smallest comfortable body text at 1920 px
 
 WARNINGS: list[str] = []
@@ -740,21 +740,28 @@ class Renderer:
             box(slide, right - cw, 33, cw, 16, fill=t.surface_brand, radius=8)
             text(slide, right - cw, 33, cw, 16, [chip], t, 9.5, t.text_inverse, bold=True,
                  align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
-        path = diagram_image(s["asset"], s.get("detail"))
+        path = ASSETS / s["image"] if s.get("image") else diagram_image(s["asset"], s.get("detail"))
         x, y, w, h = DIAGRAM_BOX
         px, py, pw, ph = picture(slide, path, x, y, w, h)
-        self.placed.append((index, s["asset"], s.get("detail"), pw, ph))
+        if not s.get("image"):
+            self.placed.append((index, s["asset"], s.get("detail"), pw, ph))
         # Every diagram opens its high-resolution view on the project
         # website. The picture and its caption both carry the link, and
         # LibreOffice keeps both as link annotations in the PDF.
         url = f"{self.meta['website']}#diagrama/{diagram_slug(self.catalog[s['asset']])}"
         slide.shapes[-1].click_action.hyperlink.address = url
-        cap = "Ver en alta resolución \u2197"
+        cap = "Abrir con zoom en el sitio \u2197"
         cs = DIAGRAM_CAPTION
-        cw = MEASURE.width(cap, cs, False) + 4
-        cy = min(py + ph + 1, SLIDE_H - cs * 1.3)
-        text(slide, px + pw - cw, cy, cw, cs * 1.3, [cap], t, cs, t.text_secondary,
-             align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.TOP)
+        cw = MEASURE.width(cap, cs, True) + 20
+        ch = cs * 1.3 + 6
+        cx = px + pw - cw
+        # Below the picture when it leaves room, so the button never covers it.
+        cy = py + ph + 4 if py + ph + 4 + ch <= SLIDE_H - 2 else min(py + ph - ch / 2,
+                                                                       SLIDE_H - ch - 2)
+        box(slide, cx, cy, cw, ch, fill="FFFFFF", line=t.brand_primary, radius=ch / 2)
+        slide.shapes[-1].click_action.hyperlink.address = url
+        text(slide, cx, cy, cw, ch, [cap], t, cs, t.brand_primary, bold=True,
+             align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
         caption = slide.shapes[-1]
         caption.click_action.hyperlink.address = url
         # Roboto has no arrow glyph and the fallback would pick a color emoji
@@ -765,7 +772,7 @@ class Renderer:
         arrow.text = cap[-1]
         arrow.font.name = ARROW_FONT
         arrow.font.size = run.font.size
-        arrow.font.color.rgb = rgb(t.text_secondary)
+        arrow.font.color.rgb = rgb(t.brand_primary)
         self.links += 1
 
     def cover(self, slide, s, index):
@@ -847,6 +854,45 @@ class Renderer:
         box(slide, t.margin, y - 10, SLIDE_W - 2 * t.margin, 1, fill=t.border_subtle)
         picture(slide, ASSETS / "brand" / "isotype.png", t.margin, y - 2, 22, 22)
 
+    def annex_links(self, slide, s, index):
+        """Annex: every diagram with its code and a link that opens it in the
+        zoomable viewer of the project website."""
+        t = self.t
+        box(slide, 0, 0, SLIDE_W, SLIDE_H, fill=t.surface)
+        box(slide, 0, 0, SLIDE_W, 6, fill=t.surface_brand)
+        tw = SLIDE_W - 2 * t.margin
+        text(slide, t.margin, 20, tw, 50, [s["title"]], t, 26, t.text_primary, bold=True,
+             anchor=MSO_ANCHOR.BOTTOM)
+        ss = fit([s["subtitle"]], tw, 22, t.size_body_large, 11, where=f"slide {index} subtitle")
+        text(slide, t.margin, 74, tw, 24, [s["subtitle"]], t, ss, t.text_secondary)
+        box(slide, t.margin, 104, 48, 3, fill=t.accent)
+        items = list(self.catalog.items())
+        half = (len(items) + 1) // 2
+        gap = 24
+        cw = (tw - gap) / 2
+        top, rh = 118, 28.5
+        for i, (key, spec) in enumerate(items):
+            col, row = divmod(i, half)
+            x, y = t.margin + col * (cw + gap), top + row * rh
+            url = f"{self.meta['website']}#diagrama/{diagram_slug(spec)}"
+            box(slide, x, y + 2, cw, rh - 4, fill="FFFFFF", line=t.border_subtle, radius=6)
+            code = f"A{i + 1:02d}"
+            box(slide, x + 6, y + 6, 36, rh - 12, fill=t.surface_brand, radius=4)
+            text(slide, x + 6, y + 6, 36, rh - 12, [code], t, 9.5, t.text_inverse, bold=True,
+                 align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+            label = spec["title"]
+            size = fit([label], cw - 76, rh - 8, 11.5, 8.5, where=f"slide {index} link {code}")
+            text(slide, x + 50, y + 2, cw - 76, rh - 4, [label], t, size, t.text_primary,
+                 anchor=MSO_ANCHOR.MIDDLE)
+            slide.shapes[-1].click_action.hyperlink.address = url
+            text(slide, x + cw - 24, y + 2, 18, rh - 4, ["\u2197"], t, 12, t.text_brand,
+                 align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+            arrow = slide.shapes[-1]
+            arrow.text_frame.paragraphs[0].runs[0].font.name = ARROW_FONT
+            arrow.click_action.hyperlink.address = url
+            self.links += 1
+        self.footer(slide, index)
+
     def qr(self, slide, s, index):
         t = self.t
         box(slide, 0, 0, SLIDE_W, SLIDE_H, fill=t.surface_brand_strong)
@@ -895,35 +941,12 @@ def expand(content: dict) -> list[dict]:
     for s in content["slides"]:
         if s["kind"] == "diagram":
             spec = catalog[s["asset"]]
-            if not diagram_image(s["asset"], s.get("detail")).exists():
+            if not s.get("image") and not diagram_image(s["asset"], s.get("detail")).exists():
                 if spec.get("optional"):
                     NOTES.append(f"SKIPPED: diagram slide {s['asset']} (not rendered yet)")
                     continue
                 sys.exit(f"ERROR: missing diagram image for {s['asset']}; run --refresh-assets")
             out.append(s)
-        elif s["kind"] == "annex":
-            n = 0
-            for key, spec in catalog.items():
-                if not diagram_image(key, None).exists():
-                    NOTES.append(f"SKIPPED: annex diagram {key} (not rendered yet)")
-                    continue
-                n += 1
-                aid = f"A{n:02d}"
-                full = {"kind": "diagram", "asset": key, "title": spec["title"],
-                        "subtitle": f"Anexo {aid} · {spec['src']} · {spec['boxes']}",
-                        "chip": f"ANEXO {aid}",
-                        "notes": f"Anexo {aid}. Vista completa de {spec['src']}. "
-                                 "Se muestra solo para responder preguntas."}
-                out.append(full)
-                details = spec.get("details", [])
-                for k, d in enumerate(details, start=1):
-                    out.append({"kind": "diagram", "asset": key, "detail": k,
-                                "title": d["label"][0].upper() + d["label"][1:],
-                                "subtitle": f"{spec['title']} · anexo {aid}, detalle {k} de "
-                                            f"{len(details)}",
-                                "chip": f"DETALLE {aid}.{k}", "full_of": full,
-                                "notes": f"Detalle {k} de {len(details)} del anexo {aid}: "
-                                         f"{d['label']}."})
         else:
             out.append(s)
     for i, s in enumerate(out, start=1):
@@ -977,7 +1000,7 @@ def write_script(content: dict, slides: list, r) -> None:
     notes, so the script and the PPTX never disagree."""
     meta, script = content["meta"], content["script"]
     talk = [s for s in slides if s.get("presenter")]
-    annex = [s for s in slides if s.get("chip")]
+    annex = [s for s in slides if s["kind"] == "annex_links"]
     total = sum(spoken(s) for s in talk)
     low, high = (int(v) for v in re.findall(r"\d+", script["target"])[:2])
     if not low * 60 <= total <= high * 60:
@@ -1000,7 +1023,7 @@ def write_script(content: dict, slides: list, r) -> None:
            f"| Issue | {script['issue']} |",
            f"| Presentación | `deck/{OUT_NAME}.pptx` y `.pdf`: {len(slides)} diapositivas, "
            f"{talk[0]['_index']} a {talk[-1]['_index']} de exposición y "
-           f"{annex[0]['_index']} a {annex[-1]['_index']} de anexo"
+           f"la {annex[0]['_index']} de anexo con los enlaces a cada diagrama"
            + (f", y la {slides[-1]['_index']} repite el cierre con el código QR"
               if slides[-1]["kind"] == "qr" and not slides[-1].get("presenter") else "")
            + " |",
@@ -1035,15 +1058,10 @@ def write_script(content: dict, slides: list, r) -> None:
             out += [f"*Transición: {first[b['who']]} cede la palabra a {first[nxt['who']]}, "
                     f"que continúa en la diapositiva {nxt['slides'][0]['_index']}.*", ""]
     out += ["## Anexo para preguntas", "", script["annex"].strip(), "",
-            "| Anexo | Diagrama | Fuente | Diapositivas |", "|---|---|---|---|"]
-    for s in annex:
-        if s.get("full_of"):
-            continue
-        views = [x["_index"] for x in annex if x is s or x.get("full_of") is s]
-        rng = f"{views[0]}" if len(views) == 1 else f"{views[0]} a {views[-1]}"
-        aid = s["chip"].split()[-1]
-        src = s["subtitle"].split(" · ")[1]
-        out.append(f"| {aid} | {s['title']} | `{src}` | {rng} |")
+            "| Anexo | Diagrama (enlace con zoom) | Fuente | Diapositiva |", "|---|---|---|---|"]
+    for i, (key, spec) in enumerate(content["assets"]["diagrams"].items(), start=1):
+        url = f"{meta['website']}#diagrama/{diagram_slug(spec)}"
+        out.append(f"| A{i:02d} | [{spec['title']}]({url}) | `{spec['src']}` | {annex[0]['_index']} |")
     (DECK_DIR.parent / "docs" / "guion-sustentacion.md").write_text(
         "\n".join(out).rstrip() + "\n", encoding="utf-8")
 
