@@ -56,39 +56,39 @@ assets:
       details:
       - box:
         - 0.0
-        - 0.05
-        - 0.52
-        - 0.3
+        - 0.052
+        - 0.497
+        - 0.247
         label: 'borde: fincas y centros de acopio'
       - box:
-        - 0.51
-        - 0.05
-        - 1.0
-        - 0.3
+        - 0.497
+        - 0.052
+        - 0.99
+        - 0.247
         label: 'borde: operación de drones, transporte y puerto'
       - box:
         - 0.0
-        - 0.31
-        - 0.5
-        - 0.8
+        - 0.245
+        - 0.2875
+        - 0.745
         label: organización AWS, cuentas e IaC
       - box:
-        - 0.29
-        - 0.31
-        - 1.0
-        - 0.8
+        - 0.2875
+        - 0.291
+        - 0.975
+        - 0.73
         label: 'cuenta de producción: niveles, cómputo por eventos y datos'
       - box:
         - 0.0
         - 0.8
-        - 0.55
         - 1.0
-        label: custodia del saco y primeros pasos de la plaga
+        - 0.89
+        label: custodia del saco, de la finca al comprador
       - box:
-        - 0.45
-        - 0.8
+        - 0.0
+        - 0.895
         - 1.0
-        - 1.0
+        - 0.985
         label: de la plaga a la fumigación verificada
     architecture-iac:
       src: complete/architecture-iac.svg
@@ -101,45 +101,51 @@ assets:
       details:
       - box:
         - 0.0
-        - 0.03
+        - 0.05
         - 1.0
-        - 0.38
+        - 0.425
         label: raíz, SCP y cuentas
       - box:
         - 0.0
-        - 0.38
+        - 0.43
         - 1.0
-        - 0.74
-        label: identidades, presupuestos y auditoría
+        - 0.725
+        label: identidades y presupuestos
       - box:
         - 0.0
-        - 0.74
+        - 0.725
         - 1.0
-        - 1.0
-        label: etiquetas y reparto del costo
+        - 0.985
+        label: auditoría, etiquetas y reparto del costo
     legacy-2020:
       src: legacy/legacy-2020.svg
       title: 'Piloto de 2020: qué se conserva, reemplaza y retira'
       boxes: Cajas D01, D03 a D06 y D08 a D10
       details:
       - box:
-        - 0.41
-        - 0.07
-        - 1.0
-        - 0.47
+        - 0.0
+        - 0.06
+        - 0.985
+        - 0.465
         label: requisitos que se conservan y su diseño 2026
       - box:
         - 0.0
-        - 0.46
-        - 0.58
-        - 0.66
+        - 0.465
+        - 0.985
+        - 0.68
         label: supuestos de 2020 que se reemplazan
       - box:
         - 0.0
-        - 0.65
-        - 0.58
-        - 0.93
+        - 0.68
+        - 0.495
+        - 0.98
         label: elementos de 2020 que se retiran
+      - box:
+        - 0.49
+        - 0.68
+        - 0.985
+        - 0.98
+        label: fundamentos del diseño 2026
     addressing-plan:
       src: network/addressing-plan.svg
       title: Plan de direccionamiento de la nube y de los sitios
@@ -147,15 +153,15 @@ assets:
       details:
       - box:
         - 0.0
-        - 0.15
-        - 0.6
-        - 0.71
+        - 0.31
+        - 0.62
+        - 0.795
         label: subredes por nivel y zona de disponibilidad
       - box:
-        - 0.6
-        - 0.15
-        - 1.0
-        - 0.58
+        - 0.625
+        - 0.31
+        - 0.98
+        - 0.795
         label: patrón del centro de acopio
     connectivity:
       src: network/connectivity.svg
@@ -164,15 +170,15 @@ assets:
       details:
       - box:
         - 0.0
-        - 0.05
-        - 0.56
-        - 0.47
+        - 0.085
+        - 0.352
+        - 0.965
         label: finca, dron, transportador, centro de acopio y puerto
       - box:
-        - 0.53
-        - 0.05
-        - 1.0
-        - 0.47
+        - 0.352
+        - 0.085
+        - 0.995
+        - 0.965
         label: cuenta de producción y camino de la alerta
     no-signal-sequence:
       src: network/no-signal-sequence.svg
@@ -181,15 +187,15 @@ assets:
       details:
       - box:
         - 0.0
-        - 0.05
-        - 0.49
-        - 0.47
+        - 0.08
+        - 0.582
+        - 0.97
         label: búfer, reconexión y orden de drenado
       - box:
-        - 0.49
-        - 0.05
-        - 1.0
-        - 0.47
+        - 0.585
+        - 0.08
+        - 0.975
+        - 0.97
         label: presupuesto de latencia por salto
     collection-center:
       src: network/collection-center.svg
@@ -199,14 +205,14 @@ assets:
       - box:
         - 0.0
         - 0.08
-        - 0.63
-        - 0.62
+        - 0.5625
+        - 0.975
         label: zonas de la LAN y firewall perimetral
       - box:
-        - 0.3
-        - 0.5
-        - 1.0
-        - 1.0
+        - 0.553
+        - 0.08
+        - 0.985
+        - 0.975
         label: flujos permitidos y denegados hacia la nube
     firewall-policy:
       src: security/firewall-policy.svg
@@ -215,15 +221,15 @@ assets:
       details:
       - box:
         - 0.0
-        - 0.08
-        - 0.58
-        - 0.58
+        - 0.07
+        - 0.348
+        - 0.855
         label: firewall del centro de acopio
       - box:
-        - 0.38
-        - 0.08
-        - 1.0
-        - 0.58
+        - 0.35
+        - 0.07
+        - 0.985
+        - 0.855
         label: tránsito y nube, nivel por nivel
     identity-and-access:
       src: security/identity-and-access.svg
@@ -232,15 +238,15 @@ assets:
       details:
       - box:
         - 0.0
-        - 0.03
-        - 0.6
-        - 0.55
+        - 0.07
+        - 0.362
+        - 0.845
         label: actores, directorios y puertas de entrada
       - box:
-        - 0.55
-        - 0.03
-        - 1.0
-        - 0.55
+        - 0.362
+        - 0.07
+        - 0.982
+        - 0.845
         label: roles de procesamiento y llave por almacén
     revocation-sequence:
       src: security/revocation-sequence.svg
@@ -250,15 +256,15 @@ assets:
       - box:
         - 0.0
         - 0.06
-        - 0.5
-        - 0.4
-        label: ingreso del personal con MFA y reautenticación
+        - 1.0
+        - 0.43
+        label: reporte, MFA escalonado y baja de un nodo o un dron
       - box:
         - 0.0
-        - 0.53
-        - 0.62
-        - 0.79
-        label: baja de un nodo o un dron y salida del personal
+        - 0.43
+        - 1.0
+        - 0.865
+        label: salida del personal, teléfono perdido y auditoría
     farm-monitoring-sequence:
       src: flows/farm-monitoring-sequence.svg
       title: Monitoreo de finca y alerta al caficultor
@@ -266,15 +272,15 @@ assets:
       details:
       - box:
         - 0.0
-        - 0.03
-        - 0.6
-        - 0.42
+        - 0.06
+        - 0.395
+        - 0.45
         label: saltos 1 a 4, del sensor a la regla de IoT
       - box:
-        - 0.22
-        - 0.4
-        - 1.0
-        - 0.8
+        - 0.0
+        - 0.45
+        - 0.98
+        - 0.843
         label: 'saltos 5 a 7: evaluación, episodio y entrega'
     drone-fumigation-sequence:
       src: flows/drone-fumigation-sequence.svg
@@ -282,17 +288,17 @@ assets:
       boxes: Cajas D04, D06, D08, D09 y D10
       details:
       - box:
-        - 0.28
-        - 0.475
-        - 0.5
-        - 0.585
-        label: orden y autorización humana con MFA
+        - 0.0
+        - 0.06
+        - 0.985
+        - 0.53
+        label: alerta, vuelo de confirmación y autorización humana con MFA
       - box:
-        - 0.4
-        - 0.58
-        - 0.85
-        - 0.78
-        label: misión precargada, vuelo y registro persistido
+        - 0.0
+        - 0.53
+        - 0.985
+        - 0.89
+        label: misión precargada, vuelo, verificación y cierre
     drone-state-machines:
       src: flows/drone-state-machines.svg
       title: Máquinas de estado del caso, la orden y la misión
@@ -300,21 +306,21 @@ assets:
       details:
       - box:
         - 0.0
-        - 0.07
-        - 0.33
-        - 0.7
+        - 0.075
+        - 0.331
+        - 0.84
         label: caso de plaga
       - box:
-        - 0.33
-        - 0.07
-        - 0.66
-        - 0.7
+        - 0.331
+        - 0.075
+        - 0.657
+        - 0.84
         label: orden de fumigación
       - box:
-        - 0.66
-        - 0.07
-        - 1.0
-        - 0.7
+        - 0.657
+        - 0.075
+        - 0.985
+        - 0.84
         label: misión del dron
     inference-functions:
       src: flows/inference-functions.svg
@@ -323,15 +329,15 @@ assets:
       details:
       - box:
         - 0.0
-        - 0.06
-        - 0.4
-        - 0.42
+        - 0.085
+        - 0.474
+        - 0.83
         label: disparadores, orquestador y colas
       - box:
-        - 0.38
-        - 0.06
-        - 0.82
-        - 0.42
+        - 0.462
+        - 0.085
+        - 0.98
+        - 0.83
         label: las cuatro funciones y la inferencia administrada
     sack-and-trip-sequence:
       src: flows/sack-and-trip-sequence.svg
@@ -340,15 +346,15 @@ assets:
       details:
       - box:
         - 0.0
-        - 0.09
-        - 0.62
-        - 0.37
+        - 0.055
+        - 0.6
+        - 0.372
         label: hoja de códigos y registro del saco
       - box:
-        - 0.4
-        - 0.74
-        - 1.0
-        - 1.0
+        - 0.0
+        - 0.705
+        - 0.98
+        - 0.888
         label: consulta pública del comprador
     sack-states:
       src: flows/sack-states.svg
@@ -357,15 +363,15 @@ assets:
       details:
       - box:
         - 0.0
-        - 0.05
-        - 0.62
-        - 0.6
+        - 0.095
+        - 0.645
+        - 0.8
         label: de la finca al centro de acopio
       - box:
-        - 0.38
-        - 0.05
-        - 1.0
-        - 0.6
+        - 0.41
+        - 0.095
+        - 0.985
+        - 0.8
         label: del centro de acopio al puerto
     telemetry:
       src: data-paths/telemetry.svg
@@ -382,15 +388,15 @@ assets:
       details:
       - box:
         - 0.0
-        - 0.0
-        - 0.52
-        - 1.0
+        - 0.085
+        - 0.415
+        - 0.65
         label: estación de tierra y enlace
       - box:
-        - 0.48
-        - 0.0
+        - 0.425
+        - 0.085
         - 1.0
-        - 1.0
+        - 0.925
         label: recepción y almacenamiento
     ingestion-and-flight-objects:
       src: pipelines/ingestion-and-flight-objects.svg
@@ -399,28 +405,16 @@ assets:
       details:
       - box:
         - 0.0
-        - 0.0
-        - 0.52
-        - 0.52
-        label: 'ingesta de telemetría: del nodo a IoT Core'
-      - box:
-        - 0.48
-        - 0.0
+        - 0.075
         - 1.0
-        - 0.52
-        label: 'ingesta de telemetría: evaluación y alerta'
+        - 0.485
+        label: 'ingesta de telemetría: del nodo a la alerta al caficultor'
       - box:
         - 0.0
-        - 0.48
-        - 0.52
+        - 0.5
         - 1.0
-        label: 'objetos de vuelo: de la estación de tierra a S3'
-      - box:
-        - 0.48
-        - 0.48
-        - 1.0
-        - 1.0
-        label: 'objetos de vuelo: recepción e inferencia'
+        - 0.935
+        label: 'objetos de vuelo: de la estación de tierra a la inferencia'
     platform-pipeline:
       src: pipelines/platform-pipeline.svg
       title: Pipeline de la plataforma y modelo de versiones
@@ -428,16 +422,16 @@ assets:
       details:
       - box:
         - 0.0
-        - 0.08
-        - 0.5
+        - 0.095
         - 1.0
-        label: fuentes, candidato y ambientes dev y qa
+        - 0.575
+        label: fuentes, candidato y ambientes dev, qa y producción
       - box:
-        - 0.5
-        - 0.08
+        - 0.0
+        - 0.595
         - 1.0
-        - 1.0
-        label: producción, salvaguardas y ventana de cosecha
+        - 0.915
+        label: salvaguardas, canario, reversión y ventana de cosecha
     iac-ci-sequence:
       src: pipelines/iac-ci-sequence.svg
       title: 'CI de la IaC: del pull request al plan'
@@ -772,7 +766,7 @@ slides:
 - kind: diagram
   asset: architecture
   title: En el borde, cada actor guarda localmente y publica al recuperar la señal
-  subtitle: Zonas completas de fincas y centros de acopio; abajo, la telemetría (MQTT) y la ruta del hub (TGW) siguen hacia la nube
+  subtitle: 'Las cuatro zonas completas del borde: fincas, centros de acopio, operación de drones, y transporte y puerto'
   presenter: SR1
   source: aroma-pacifico-diagrams, complete/architecture.svg (detalle)
   notes: 'En el detalle del borde se ve la regla común: el nodo de finca, la estación de tierra y el teléfono del transportador guardan cifrado y liberan solo al confirmar la recepción.
@@ -863,7 +857,7 @@ slides:
 - kind: diagram
   asset: connectivity
   title: Cada flujo tiene protocolo, búfer y conducta sin señal
-  subtitle: Las siete zonas del diagrama de conectividad; ábralo con zoom para leer cada flujo
+  subtitle: Campo y sitios a la izquierda, la nube a la derecha; ábralo con zoom para leer cada flujo
   presenter: JR1
   source: aroma-pacifico-diagrams, network/connectivity.svg · Conectividad, secciones 2 a 11
   notes: 'Este es el diseño de conectividad, en el cuerpo de la propuesta y no en un anexo. La finca publica MQTT sobre TLS con certificado X.509; la finca sin cobertura usa el mismo nodo con portador satelital; el dron baja sus objetos por el centro o por la cabecera municipal; el transportador publica cada 5 minutos con bandeja cifrada; y el puerto solo registra la entrega.
