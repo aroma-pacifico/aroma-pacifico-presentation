@@ -1,177 +1,177 @@
 {
   "architecture": {
     "svg_units": [
-      2924.0,
-      2409.0
+      2425.0,
+      1935.0
     ],
     "body_px": 13.0
   },
   "architecture-iac": {
     "svg_units": [
-      2933.0,
-      1157.0
+      2381.0,
+      900.0
     ],
-    "body_px": 18.0
+    "body_px": 16.0
   },
   "landing-zone": {
     "svg_units": [
-      2373.0,
-      2207.0
+      2423.0,
+      1828.0
     ],
     "body_px": 12.0
   },
   "legacy-2020": {
     "svg_units": [
-      3153.0,
-      2527.0
+      2033.0,
+      1444.0
     ],
-    "body_px": 11.0
+    "body_px": 14.0
   },
   "addressing-plan": {
     "svg_units": [
-      2753.0,
-      2026.0
+      1803.0,
+      1264.0
     ],
-    "body_px": 11.5
+    "body_px": 14.0
   },
   "connectivity": {
     "svg_units": [
-      3653.0,
-      2272.0
+      2012.0,
+      1167.0
     ],
-    "body_px": 11.0
+    "body_px": 13.0
   },
   "no-signal-sequence": {
     "svg_units": [
-      3746.0,
-      2277.0
+      2047.0,
+      1194.0
     ],
-    "body_px": 12.0
+    "body_px": 14.0
   },
   "collection-center": {
     "svg_units": [
-      2394.0,
-      1621.0
+      1923.0,
+      1315.0
     ],
-    "body_px": 15.0
+    "body_px": 13.0
   },
   "firewall-policy": {
     "svg_units": [
-      2693.0,
-      1603.0
+      2113.0,
+      1215.0
     ],
-    "body_px": 9.5
+    "body_px": 12.0
   },
   "identity-and-access": {
     "svg_units": [
-      3413.0,
-      1782.0
+      2003.0,
+      1307.0
     ],
-    "body_px": 11.0
+    "body_px": 12.0
   },
   "revocation-sequence": {
     "svg_units": [
-      3713.0,
-      2657.0
+      1905.0,
+      1411.0
     ],
-    "body_px": 11.5
+    "body_px": 12.0
   },
   "farm-monitoring-sequence": {
     "svg_units": [
-      3154.0,
-      3027.0
+      1903.0,
+      1392.0
     ],
     "body_px": 12.0
   },
   "drone-fumigation-sequence": {
     "svg_units": [
-      4247.0,
-      5262.0
+      1905.0,
+      1492.0
     ],
     "body_px": 12.0
   },
   "drone-state-machines": {
     "svg_units": [
-      4132.0,
-      1607.0
+      1993.0,
+      1125.0
     ],
-    "body_px": 11.0
+    "body_px": 12.0
   },
   "inference-functions": {
     "svg_units": [
-      2753.0,
-      2332.0
+      1973.0,
+      1101.0
     ],
-    "body_px": 10.0
+    "body_px": 12.0
   },
   "sack-and-trip-sequence": {
     "svg_units": [
-      3453.0,
-      3757.0
+      1903.0,
+      1532.0
     ],
-    "body_px": 11.5
+    "body_px": 12.0
   },
   "sack-states": {
     "svg_units": [
-      3333.0,
-      1442.0
+      1938.0,
+      890.0
     ],
     "body_px": 12.0
   },
   "telemetry": {
     "svg_units": [
-      2883.0,
-      972.0
+      1823.0,
+      705.0
     ],
-    "body_px": 16.0
+    "body_px": 12.0
   },
   "transporter-position": {
     "svg_units": [
-      2822.0,
-      912.0
+      1823.0,
+      675.0
     ],
-    "body_px": 16.0
+    "body_px": 12.0
   },
   "drone-objects": {
     "svg_units": [
-      2893.0,
-      1222.0
+      1863.0,
+      848.0
     ],
-    "body_px": 14.0
+    "body_px": 12.0
   },
   "ingestion-and-flight-objects": {
     "svg_units": [
-      2613.0,
-      1292.0
+      1863.0,
+      986.0
     ],
     "body_px": 11.0
   },
   "platform-pipeline": {
     "svg_units": [
-      2613.0,
-      1152.0
+      1903.0,
+      754.0
     ],
-    "body_px": 13.0
+    "body_px": 11.0
   },
   "iac-ci-sequence": {
     "svg_units": [
-      2353.0,
-      3965.0
+      1863.0,
+      1760.0
     ],
-    "body_px": 12.0
+    "body_px": 10.0
   },
   "iac-provisioning-sequence": {
     "svg_units": [
-      2353.0,
-      3651.0
+      1863.0,
+      1870.0
     ],
-    "body_px": 12.0
+    "body_px": 10.0
   },
   "iac-teardown-and-rollback-sequence": {
     "svg_units": [
-      2353.0,
-      2871.0
+      1863.0,
+      1520.0
     ],
-    "body_px": 12.0
+    "body_px": 10.0
   }
 }

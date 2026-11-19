@@ -1,2 +1,2 @@
 Body text height of each diagram view at 1920 px (smallest font used by five or more labels)
-  10  architecture                                  5.1 px  FULL VIEW, SEE DETAIL VIEWS
+  10  architecture                                  6.4 px  FULL VIEW, SEE DETAIL VIEWS
