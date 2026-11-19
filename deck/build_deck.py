@@ -71,13 +71,15 @@ PORTRAIT_FACE = 0.30  # eye-to-chin distance as a share of the portrait height
 PORTRAIT_EYES = 0.365  # eye line as a share of the portrait height, from the top
 PORTRAIT_MAX_H = 900  # pixels
 
-# Diagram slides: a slim title band, then a content box of at least 85 % of
-# the slide area that the diagram fills with a contain fit (never cropped,
-# never stretched).
+# Diagram slides: a slim title band, a contain-fit content box (never cropped,
+# never stretched), and a reserved row underneath for the zoom link button.
 DIAGRAM_BAND = 56.0  # points of title band at the top
 DIAGRAM_EDGE = 12.0  # points of margin left, right and bottom
+DIAGRAM_CAPTION = 11
+DIAGRAM_BUTTON_H = DIAGRAM_CAPTION * LINE_HEIGHT + 6
+DIAGRAM_BUTTON_GAP = 6.0  # points of clearance between diagram and zoom button
 DIAGRAM_BOX = (DIAGRAM_EDGE, DIAGRAM_BAND, SLIDE_W - 2 * DIAGRAM_EDGE,
-               SLIDE_H - DIAGRAM_BAND - DIAGRAM_EDGE)
+               SLIDE_H - DIAGRAM_BAND - DIAGRAM_EDGE - DIAGRAM_BUTTON_GAP - DIAGRAM_BUTTON_H)
 PREVIEW_PX = 1920  # width of the slide previews used for the visual gate
 PX_PER_PT = PREVIEW_PX / SLIDE_W
 # Diagram images are stored at twice the pixel size of the box at 1920 px.
@@ -85,9 +87,6 @@ DIAGRAM_MAX_PX = (round(DIAGRAM_BOX[2] * PX_PER_PT * 2), round(DIAGRAM_BOX[3] * 
 DIAGRAM_MASTER_SCALE = 3  # SVG units to pixels for the master render
 DIAGRAM_MASTER_PIXELS = 80e6  # cap for the largest diagrams (memory)
 LEGIBLE_PX = 10
-# The caption under a linked diagram: the token caption color and weight,
-# at the size that fits the 12 pt band under DIAGRAM_BOX.
-DIAGRAM_CAPTION = 11
 ARROW_FONT = "DejaVu Sans"  # smallest comfortable body text at 1920 px
 
 WARNINGS: list[str] = []
@@ -753,11 +752,10 @@ class Renderer:
         cap = "Abrir con zoom en el sitio \u2197"
         cs = DIAGRAM_CAPTION
         cw = MEASURE.width(cap, cs, True) + 20
-        ch = cs * 1.3 + 6
-        cx = px + pw - cw
-        # Below the picture when it leaves room, so the button never covers it.
-        cy = py + ph + 4 if py + ph + 4 + ch <= SLIDE_H - 2 else min(py + ph - ch / 2,
-                                                                       SLIDE_H - ch - 2)
+        ch = DIAGRAM_BUTTON_H
+        cx = max(DIAGRAM_EDGE, px + pw - cw)
+        # Placed in the reserved row below DIAGRAM_BOX so it never overlaps the diagram.
+        cy = py + ph + DIAGRAM_BUTTON_GAP
         box(slide, cx, cy, cw, ch, fill="FFFFFF", line=t.brand_primary, radius=ch / 2)
         slide.shapes[-1].click_action.hyperlink.address = url
         text(slide, cx, cy, cw, ch, [cap], t, cs, t.brand_primary, bold=True,
